@@ -1,0 +1,58 @@
+import '../models/doctor.dart';
+
+final List<Doctor> mockDoctors = [
+  const Doctor(
+    id: 1,
+    name: 'Dr. Priya Sharma',
+    specialty: 'Cardiologist',
+    distanceKm: 0.8,
+    rating: 4.8,
+    imageUrl: 'https://placehold.co/150x150/6366f1/ffffff?text=PS',
+    availability: 'Available Today',
+  ),
+  const Doctor(
+    id: 2,
+    name: 'Dr. Arjun Mehta',
+    specialty: 'Dermatologist',
+    distanceKm: 1.4,
+    rating: 4.6,
+    imageUrl: 'https://placehold.co/150x150/6366f1/ffffff?text=AM',
+    availability: 'Available Tomorrow',
+  ),
+  const Doctor(
+    id: 3,
+    name: 'Dr. Sneha Reddy',
+    specialty: 'Pediatrician',
+    distanceKm: 2.1,
+    rating: 4.9,
+    imageUrl: 'https://placehold.co/150x150/6366f1/ffffff?text=SR',
+    availability: 'Available Today',
+  ),
+  const Doctor(
+    id: 4,
+    name: 'Dr. Rajesh Kumar',
+    specialty: 'Orthopedic Surgeon',
+    distanceKm: 3.2,
+    rating: 4.7,
+    imageUrl: 'https://placehold.co/150x150/6366f1/ffffff?text=RK',
+    availability: 'Available Tomorrow',
+  ),
+  const Doctor(
+    id: 5,
+    name: 'Dr. Ananya Desai',
+    specialty: 'General Physician',
+    distanceKm: 0.5,
+    rating: 4.5,
+    imageUrl: 'https://placehold.co/150x150/6366f1/ffffff?text=AD',
+    availability: 'Available Today',
+  ),
+  const Doctor(
+    id: 6,
+    name: 'Dr. Amit Patel',
+    specialty: 'Dentist',
+    distanceKm: 4.0,
+    rating: 4.3,
+    imageUrl: 'https://placehold.co/150x150/6366f1/ffffff?text=AP',
+    availability: 'Available Tomorrow',
+  ),
+];
