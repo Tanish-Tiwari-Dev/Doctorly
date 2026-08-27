@@ -21,4 +21,18 @@ class LocationService {
 
     return true;
   }
+
+  Future<Position?> getCurrentPosition() async {
+    final granted = await requestPermission();
+    if (!granted) return null;
+    try {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 }

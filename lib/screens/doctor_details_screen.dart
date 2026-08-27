@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/doctor_provider.dart';
+import '../providers/favorites_provider.dart';
 
 class DoctorDetailsScreen extends ConsumerWidget {
   const DoctorDetailsScreen({super.key, required this.id});
-  final int id;
+  final String id;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -13,100 +15,257 @@ class DoctorDetailsScreen extends ConsumerWidget {
 
     if (doctor == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text('Doctor Details', style: GoogleFonts.inter()),
+        body: const Center(
+          child: CircularProgressIndicator(color: Color(0xFF0A6EBD)),
         ),
-        body: const Center(child: Text('Doctor not found')),
       );
     }
 
+    final favorites = ref.watch(favoritesProvider).valueOrNull ?? <String>{};
+    final isFav = favorites.contains(id);
+
+    Future<void> toggleFavorite() async {
+      try {
+        await ref.read(favoritesProvider.notifier).toggle(doctor.id);
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Could not update favorite. Try again.',
+                style: GoogleFonts.inter(),
+              ),
+            ),
+          );
+        }
+      }
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(doctor.name, style: GoogleFonts.inter()),
-        centerTitle: false,
-      ),
-      body: ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 56,
-                  backgroundImage: NetworkImage(doctor.imageUrl),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  doctor.name,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 280.0,
+            pinned: true,
+            floating: false,
+            backgroundColor: const Color(0xFF0F172A),
+            iconTheme: const IconThemeData(color: Colors.white),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/');
+                }
+              },
+            ),
+            actions: [
+              SizedBox(
+                width: 48,
+                height: 48,
+                child: IconButton(
+                  icon: Icon(
+                    isFav ? Icons.favorite : Icons.favorite_border,
+                    color: isFav ? const Color(0xFFEF4444) : Colors.white,
                   ),
+                  onPressed: toggleFavorite,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  doctor.specialty,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    color: Colors.grey.shade700,
+              ),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Hero(
+                    tag: 'doctor-avatar-${doctor.id}',
+                    child: Image.network(
+                      doctor.imageUrl,
+                      fit: BoxFit.cover,
+                      colorBlendMode: BlendMode.darken,
+                      color: Colors.black54,
+                      errorBuilder: (_, _, _) => Container(
+                        color: const Color(0xFF0F172A),
+                        child: const Center(
+                          child: Icon(
+                            Icons.person,
+                            size: 96,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${doctor.rating}\u2605 \u2022 ${doctor.distanceKm.toStringAsFixed(1)} km away',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Colors.black54],
+                      ),
+                    ),
                   ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Transform.translate(
+              offset: const Offset(0, -20.0),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                _buildInfoRow('Availability', doctor.availability),
-                _buildInfoRow('Consultation Fee', 'Free'),
-                _buildInfoRow('Experience', '5+ years'),
-              ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            doctor.name,
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              color: Color(0xFFF59E0B),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              doctor.rating.toStringAsFixed(1),
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      doctor.specialty,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    if (doctor.isAvailableToday) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 4,
+                            backgroundColor: Color(0xFF10B981),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Available Today',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFF10B981),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    const Divider(color: Color(0xFFE5E7EB)),
+                    const SizedBox(height: 16),
+                    Text(
+                      'About',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Experienced ${doctor.specialty} dedicated to providing top-notch medical care.',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: const Color(0xFF64748B),
+                        height: 1.5,
+                      ),
+                    ),
+                    if (doctor.address != null) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: Color(0xFF0A6EBD),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              doctor.address!,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 80),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
       ),
       bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+          ),
           child: FilledButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Booking feature coming soon!',
-                    style: GoogleFonts.inter(),
-                  ),
-                ),
-              );
-            },
+            onPressed: () => context.push('/booking/${doctor.id}'),
             style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: const Color(0xFF0A6EBD),
+              minimumSize: const Size(double.infinity, 56),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
             child: Text(
               'Book Appointment',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: GoogleFonts.inter(color: Colors.grey.shade600)),
-          Text(value,
-              style:
-                  GoogleFonts.inter(fontWeight: FontWeight.w500)),
-        ],
       ),
     );
   }
