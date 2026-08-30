@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/doctor.dart';
 import '../models/specialty.dart';
 import '../providers/doctor_provider.dart';
 import '../providers/location_provider.dart';
+import '../providers/supabase_client_provider.dart';
+import '../utils/app_colors.dart';
 import '../widgets/doctor_card.dart';
 import '../widgets/empty_state.dart';
 
@@ -36,7 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SnackBar(
             content: Text(
               'Location denied, showing default nearby doctors.',
-              style: GoogleFonts.inter(),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
         );
@@ -52,7 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SnackBar(
             content: Text(
               'Could not get your location.',
-              style: GoogleFonts.inter(),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
         );
@@ -80,7 +81,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SnackBar(
             content: Text(
               'No doctors within 5 km.',
-              style: GoogleFonts.inter(),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
         );
@@ -89,7 +90,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SnackBar(
             content: Text(
               'Showing ${list.length} doctor${list.length == 1 ? '' : 's'} within 5 km.',
-              style: GoogleFonts.inter(),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
         );
@@ -100,7 +101,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         SnackBar(
           content: Text(
             'Location denied, showing default nearby doctors.',
-            style: GoogleFonts.inter(),
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
       );
@@ -114,7 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final asyncDoctors = ref.watch(doctorListProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: asyncDoctors.when(
           loading: () => const CustomScrollView(
@@ -122,7 +123,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFF0A6EBD)),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 ),
               ),
             ],
@@ -136,6 +137,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     icon: Icons.cloud_off,
                     title: 'Error',
                     subtitle: 'Could not load doctors.',
+                    onRetry: () => ref.invalidate(doctorListProvider),
                   ),
                 ),
               ),
@@ -159,20 +161,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             children: [
                               Text(
                                 'Hi, Welcome back 👋',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: const Color(0xFF64748B),
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'Find your doctor',
-                                style: GoogleFonts.inter(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF0F172A),
-                                ),
+                                style: Theme.of(context).textTheme.headlineMedium,
                               ),
                             ],
                           ),
@@ -186,7 +182,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               _nearbyActive
                                   ? Icons.location_off
                                   : Icons.near_me,
-                              color: const Color(0xFF0A6EBD),
+                              color: AppColors.primary,
                             ),
                             tooltip: 'Near Me',
                             onPressed: _handleNearMe,
@@ -204,12 +200,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                          color: AppColors.textPrimary.withValues(alpha: 0.04),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
                         BoxShadow(
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+                          color: AppColors.textPrimary.withValues(alpha: 0.06),
                           blurRadius: 24,
                           offset: const Offset(0, 8),
                         ),
@@ -218,18 +214,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: TextField(
                       controller: _searchController,
                       onChanged: (value) {
-                        ref.read(searchQueryProvider.notifier).state = value;
+                        ref.read(searchQueryProvider.notifier).setQuery(value);
                       },
                       decoration: InputDecoration(
                         hintText: 'Search doctors, specialties…',
-                        hintStyle: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: const Color(0xFF94A3B8),
+                        hintStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textHint,
                         ),
                         prefixIcon: const Icon(
                           Icons.search,
                           size: 20,
-                          color: Color(0xFF94A3B8),
+                          color: AppColors.textHint,
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -253,79 +248,83 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           child: Text(
                             'Top Rated',
-                            style: GoogleFonts.inter(
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ),
-                        SizedBox(
-                          height: 160,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.only(
-                              left: 20,
-                              right: 20,
-                              bottom: 8,
-                            ),
-                            itemCount: topRated.length,
-                            separatorBuilder: (_, _) => const SizedBox(width: 12),
-                            itemBuilder: (_, i) => SizedBox(
-                              width: 240,
-                              child: DoctorCard(doctor: topRated[i], compact: true),
-                            ),
-                          ),
-                        ),
+                         SizedBox(
+                           height: 160,
+                           child: ListView.builder(
+                             scrollDirection: Axis.horizontal,
+                             padding: const EdgeInsets.only(
+                               left: 20,
+                               right: 20,
+                               bottom: 8,
+                             ),
+                             itemCount: topRated.length,
+                             itemExtent: 252,
+                             itemBuilder: (_, i) => SizedBox(
+                               width: 240,
+                               child: DoctorCard(doctor: topRated[i], compact: true),
+                             ),
+                           ),
+                         ),
                       ],
                     ),
                   ),
-                if (filtered.isEmpty)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: EmptyState(
-                        icon: Icons.search_off,
-                        title: 'No doctors found',
-                        subtitle: 'Try a different search or filter.',
+                  if (filtered.isEmpty)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: EmptyState(
+                          icon: Icons.search_off,
+                          title: 'No doctors found',
+                          subtitle: 'Try a different search or filter.',
+                        ),
                       ),
-                    ),
-                  )
-                else
-                  SliverLayoutBuilder(
-                    builder: (context, constraints) {
-                      if (constraints.crossAxisExtent < 600) {
-                        return SliverList.separated(
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final doctor = filtered[index];
-                            return DoctorCard(doctor: doctor);
-                          },
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 8),
+                    )
+                  else
+                    SliverLayoutBuilder(
+                      builder: (context, constraints) {
+                        if (constraints.crossAxisExtent < 600) {
+                          return SliverList.builder(
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final doctor = filtered[index];
+                              return Column(
+                                children: [
+                                  DoctorCard(doctor: doctor),
+                                  if (index < filtered.length - 1)
+                                    const SizedBox(height: 8),
+                                ],
+                              );
+                            },
+                          );
+                        }
+                        return SliverGrid(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final doctor = filtered[index];
+                              return Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: DoctorCard(doctor: doctor),
+                              );
+                            },
+                            childCount: filtered.length,
+                          ),
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 320,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 2.6,
+                          ),
                         );
-                      }
-                      return SliverGrid(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final doctor = filtered[index];
-                            return Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: DoctorCard(doctor: doctor),
-                            );
-                          },
-                          childCount: filtered.length,
-                        ),
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 320,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 2.6,
-                        ),
-                      );
-                    },
-                  ),
+                      },
+                    ),
               ],
             );
           },
@@ -354,7 +353,7 @@ class _SpecialtyChipDelegate extends SliverPersistentHeaderDelegate {
   ) {
     final selected = ref.watch(selectedSpecialtyProvider);
     return Container(
-      color: const Color(0xFFF5F5F5),
+      color: AppColors.background,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),

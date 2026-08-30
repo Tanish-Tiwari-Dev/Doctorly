@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../utils/app_colors.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -60,7 +61,7 @@ class _AuthScreenState extends State<AuthScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: AppColors.textPrimary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -124,36 +125,36 @@ class _AuthScreenState extends State<AuthScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xFF0A6EBD),
-                                Color(0xFF38BDF8),
-                              ],
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.health_and_safety,
-                            size: 22,
-                            color: Colors.white,
-                          ),
-                        ),
+                     Container(
+                       width: 40,
+                       height: 40,
+                       decoration: BoxDecoration(
+                         shape: BoxShape.circle,
+                         gradient: const LinearGradient(
+                           begin: Alignment.topLeft,
+                           end: Alignment.bottomRight,
+                           colors: [
+                             AppColors.primary,
+                             AppColors.gradientSecondary,
+                           ],
+                         ),
+                       ),
+                       child: const Icon(
+                         Icons.health_and_safety,
+                         size: 22,
+                         color: Colors.white,
+                       ),
+                     ),
                         const SizedBox(width: 12),
-                        Text(
-                          'Doctorly',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF0A6EBD),
-                            letterSpacing: -0.5,
-                          ),
-                        ),
+                     Text(
+                       'Doctorly',
+                       style: GoogleFonts.plusJakartaSans(
+                         fontSize: 30,
+                         fontWeight: FontWeight.w800,
+                         color: AppColors.primary,
+                         letterSpacing: -0.5,
+                       ),
+                     ),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -232,25 +233,25 @@ class _AuthScreenState extends State<AuthScreen> {
                       onFieldSubmitted: (_) => _submit(),
                     ),
                     const SizedBox(height: 32),
-                    SizedBox(
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _submitting ? null : _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0A6EBD),
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor:
-                              const Color(0xFF0A6EBD).withValues(alpha: 0.5),
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          textStyle: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                     SizedBox(
+                       height: 56,
+                       child: ElevatedButton(
+                         onPressed: _submitting ? null : _submit,
+                         style: ElevatedButton.styleFrom(
+                           backgroundColor: AppColors.primary,
+                           foregroundColor: Colors.white,
+                           disabledBackgroundColor:
+                               AppColors.primary.withValues(alpha: 0.5),
+                           elevation: 0,
+                           shadowColor: Colors.transparent,
+                           shape: RoundedRectangleBorder(
+                             borderRadius: BorderRadius.circular(30),
+                           ),
+                           textStyle: GoogleFonts.plusJakartaSans(
+                             fontSize: 16,
+                             fontWeight: FontWeight.w700,
+                           ),
+                         ),
                         child: _submitting
                             ? const SizedBox(
                                 width: 22,
@@ -279,18 +280,18 @@ class _AuthScreenState extends State<AuthScreen> {
                             color: Colors.grey[500],
                           ),
                         ),
-                        TextButton(
-                          onPressed: _submitting ? null : _toggleMode,
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF0A6EBD),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 4,
-                            ),
-                            minimumSize: const Size(0, 0),
-                            tapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                          ),
+                         TextButton(
+                           onPressed: _submitting ? null : _toggleMode,
+                           style: TextButton.styleFrom(
+                             foregroundColor: AppColors.primary,
+                             padding: const EdgeInsets.symmetric(
+                               horizontal: 4,
+                               vertical: 4,
+                             ),
+                             minimumSize: const Size(0, 0),
+                             tapTargetSize:
+                                 MaterialTapTargetSize.shrinkWrap,
+                           ),
                           child: Text(
                             _isLogin ? 'Sign Up' : 'Sign In',
                             style: GoogleFonts.plusJakartaSans(
@@ -349,7 +350,7 @@ class _PillTextField extends StatelessWidget {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: AppColors.textPrimary,
             ),
           ),
         ),
@@ -363,16 +364,16 @@ class _PillTextField extends StatelessWidget {
           style: GoogleFonts.plusJakartaSans(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: const Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.plusJakartaSans(
               fontSize: 15,
-              color: const Color(0xFF94A3B8),
+              color: AppColors.textHint,
             ),
             filled: true,
-            fillColor: const Color(0xFFF5F5F5),
+            fillColor: AppColors.background,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 20,
               vertical: 18,
@@ -382,7 +383,7 @@ class _PillTextField extends StatelessWidget {
               child: Icon(
                 prefixIcon,
                 size: 20,
-                color: const Color(0xFF64748B),
+                color: AppColors.textSecondary,
               ),
             ),
             prefixIconConstraints:
@@ -399,28 +400,28 @@ class _PillTextField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(28),
               borderSide: const BorderSide(
-                color: Color(0xFF0A6EBD),
+                color: AppColors.primary,
                 width: 1.5,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(28),
               borderSide: const BorderSide(
-                color: Color(0xFFEF4444),
+                color: AppColors.error,
                 width: 1,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(28),
               borderSide: const BorderSide(
-                color: Color(0xFFEF4444),
+                color: AppColors.error,
                 width: 1.5,
               ),
             ),
             errorStyle: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFFEF4444),
+              color: AppColors.error,
             ),
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/app_colors.dart';
 
 class BottomNavScaffold extends StatelessWidget {
   const BottomNavScaffold({super.key, required this.navigationShell});
@@ -9,18 +10,18 @@ class BottomNavScaffold extends StatelessWidget {
 
   static const _destinations = <NavigationDestination>[
     NavigationDestination(
-      icon: Icon(Icons.home_outlined, color: Color(0xFF94A3B8)),
-      selectedIcon: Icon(Icons.home, color: Color(0xFF0A6EBD)),
+      icon: Icon(Icons.home_outlined, color: AppColors.inactiveIcon),
+      selectedIcon: Icon(Icons.home, color: AppColors.primary),
       label: 'Home',
     ),
     NavigationDestination(
-      icon: Icon(Icons.favorite_border, color: Color(0xFF94A3B8)),
-      selectedIcon: Icon(Icons.favorite, color: Color(0xFF0A6EBD)),
+      icon: Icon(Icons.favorite_border, color: AppColors.inactiveIcon),
+      selectedIcon: Icon(Icons.favorite, color: AppColors.primary),
       label: 'Favorites',
     ),
     NavigationDestination(
-      icon: Icon(Icons.calendar_today_outlined, color: Color(0xFF94A3B8)),
-      selectedIcon: Icon(Icons.calendar_today, color: Color(0xFF0A6EBD)),
+      icon: Icon(Icons.calendar_today_outlined, color: AppColors.inactiveIcon),
+      selectedIcon: Icon(Icons.calendar_today, color: AppColors.primary),
       label: 'Appointments',
     ),
   ];
@@ -41,17 +42,17 @@ class BottomNavScaffold extends StatelessWidget {
                   labelType: NavigationRailLabelType.all,
                   backgroundColor: Colors.white,
                   indicatorColor:
-                      const Color(0xFF0A6EBD).withValues(alpha: 0.12),
+                      AppColors.primary.withValues(alpha: 0.12),
                   selectedIconTheme:
-                      const IconThemeData(color: Color(0xFF0A6EBD), size: 24),
+                      const IconThemeData(color: AppColors.primary, size: 24),
                   unselectedIconTheme:
-                      const IconThemeData(color: Color(0xFF64748B), size: 24),
+                      const IconThemeData(color: AppColors.textSecondary, size: 24),
                   selectedLabelTextStyle: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0A6EBD),
+                    color: AppColors.primary,
                   ),
                   unselectedLabelTextStyle: GoogleFonts.inter(
-                    color: const Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                   destinations: const [
                     NavigationRailDestination(
@@ -74,7 +75,7 @@ class BottomNavScaffold extends StatelessWidget {
                 const VerticalDivider(
                   thickness: 1,
                   width: 1,
-                  color: Color(0xFFE5E7EB),
+                  color: AppColors.divider,
                 ),
                 Expanded(child: navigationShell),
               ],
@@ -91,7 +92,7 @@ class BottomNavScaffold extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+                  color: AppColors.textPrimary.withValues(alpha: 0.06),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),

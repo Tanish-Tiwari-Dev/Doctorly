@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../models/appointment.dart';
 import '../providers/appointments_provider.dart';
 import '../providers/doctor_provider.dart';
+import '../utils/app_colors.dart';
 import '../widgets/empty_state.dart';
 
 class AppointmentsScreen extends ConsumerWidget {
@@ -16,15 +16,16 @@ class AppointmentsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Appointments', style: GoogleFonts.inter()),
+        title: Text('Appointments', style: Theme.of(context).textTheme.titleMedium),
         centerTitle: false,
       ),
       body: appointments.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => const EmptyState(
+        error: (e, _) => EmptyState(
           icon: Icons.cloud_off,
           title: 'Could not load appointments',
           subtitle: 'Please check your connection and try again.',
+          onRetry: () => ref.invalidate(appointmentsProvider),
         ),
         data: (items) {
           if (items.isEmpty) {
@@ -82,7 +83,9 @@ class _AppointmentCard extends ConsumerWidget {
         ),
         title: Text(
           doctorName,
-          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
         subtitle: Text('$specialty \u2022 $formattedDate'),
         trailing: _StatusChip(status: appointment.status),
@@ -100,13 +103,13 @@ class _StatusChip extends StatelessWidget {
     Color color;
     switch (status) {
       case AppointmentStatus.confirmed:
-        color = Colors.green;
+        color = AppColors.success;
         break;
       case AppointmentStatus.cancelled:
-        color = Colors.grey;
+        color = AppColors.textSecondary;
         break;
       case AppointmentStatus.pending:
-        color = Colors.orange;
+        color = AppColors.warning;
         break;
     }
     return Chip(
@@ -116,7 +119,9 @@ class _StatusChip extends StatelessWidget {
             : status == AppointmentStatus.confirmed
                 ? 'Confirmed'
                 : 'Cancelled',
-        style: GoogleFonts.inter(fontSize: 12, color: Colors.white),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Colors.white,
+        ),
       ),
       backgroundColor: color,
       padding: EdgeInsets.zero,

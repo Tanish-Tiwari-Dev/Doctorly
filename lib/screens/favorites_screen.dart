@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../providers/doctor_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/doctor_card.dart';
@@ -16,7 +15,7 @@ class FavoritesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Favorites', style: GoogleFonts.inter()),
+        title: Text('Favorites', style: Theme.of(context).textTheme.titleMedium),
         centerTitle: false,
       ),
       body: favorites.when(
@@ -25,6 +24,7 @@ class FavoritesScreen extends ConsumerWidget {
           icon: Icons.error_outline,
           title: 'Could not load favorites.',
           subtitle: e.toString(),
+          onRetry: () => ref.invalidate(favoritesProvider),
         ),
         data: (ids) {
           final doctors = allDoctors.valueOrNull ?? const [];

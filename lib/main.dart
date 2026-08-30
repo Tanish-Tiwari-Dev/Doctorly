@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,62 +7,118 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'env.dart';
+import 'providers/error_reporter_provider.dart';
+import 'services/logger.dart';
 import 'utils/app_router.dart';
+import 'widgets/error_boundary.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  await runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Load .env if present; --dart-define values remain available as a fallback
-  // for CI / build pipelines that prefer not to ship a .env file.
-  try {
-    await dotenv.load(fileName: '.env');
-    // Only fall back to --dart-define if .env didn't contain the key.
-    const urlFromDefine = String.fromEnvironment('SUPABASE_URL');
-    const keyFromDefine =
-        String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
-    Env.supabaseUrl = dotenv.maybeGet('SUPABASE_URL') ??
-        (urlFromDefine.isNotEmpty ? urlFromDefine : '');
-    Env.supabasePublishableKey = dotenv.maybeGet('SUPABASE_PUBLISHABLE_KEY') ??
-        (keyFromDefine.isNotEmpty ? keyFromDefine : '');
-  } catch (e, st) {
-    debugPrint('dotenv load failed: $e\n$st');
-    // Fall back to --dart-define if .env is missing.
-    Env.supabaseUrl = const String.fromEnvironment('SUPABASE_URL');
-    Env.supabasePublishableKey =
-        const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
-  }
+    await LoggerService.instance.initialize();
 
-  if (Env.isConfigured) {
-    await Supabase.initialize(
-      url: Env.supabaseUrl,
-      publishableKey: Env.supabasePublishableKey,
-    );
-    debugPrint('Supabase Initialized: ${Env.supabaseUrl}');
     try {
-      await Supabase.instance.client.auth.signInAnonymously();
-    } catch (e) {
-      debugPrint('Anonymous sign-in failed: $e');
+      await dotenv.load(fileName: '.env');
+    } catch (e, st) {
+      LoggerService.instance.log.warning('dotenv load failed', e, st);
     }
-  } else {
-    debugPrint(
-      'Supabase is not configured. Add SUPABASE_URL and '
-      'SUPABASE_PUBLISHABLE_KEY to .env (see .env.example) or pass them '
-      'via --dart-define.',
+
+    final urlFromDefine = const String.fromEnvironment('SUPABASE_URL');
+    final keyFromDefine = const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+    String? maybeUrl;
+    String? maybeKey;
+    try {
+      maybeUrl = dotenv.maybeGet('SUPABASE_URL');
+      maybeKey = dotenv.maybeGet('SUPABASE_PUBLISHABLE_KEY');
+    } catch (e, st) {
+      LoggerService.instance.log.warning('dotenv maybeGet failed', e, st);
+    }
+    Env.supabaseUrl = maybeUrl ??
+        (urlFromDefine.isNotEmpty ? urlFromDefine : '');
+    Env.supabasePublishableKey = maybeKey ??
+        (keyFromDefine.isNotEmpty ? keyFromDefine : '');
+
+    // Anonymous auth is currently used as a placeholder until real auth
+    // (email/OTP + Google + Apple) is implemented in Phase 8.
+    // Risk: anon auth can be abused for credential stuffing, spam, and
+    // rate-limit evasion because no identity barrier exists.
+    // Mitigation today: Supabase project-level rate limits + RLS.
+    // TODO(#8): Migrate to real auth providers and remove anonymous sign-in.
+    bool initialized = true;
+    try {
+      Env.requireConfigured();
+    } on ConfigurationException catch (e) {
+      LoggerService.instance.log.severe('Configuration error', e);
+      initialized = false;
+    }
+
+    if (initialized) {
+      try {
+        await Supabase.initialize(
+          url: Env.supabaseUrl,
+          publishableKey: Env.supabasePublishableKey,
+        );
+        LoggerService.instance.log.info('Supabase Initialized: ${Env.supabaseUrl}');
+      } catch (e, st) {
+        LoggerService.instance.log.severe('Supabase initialization failed', e, st);
+        initialized = false;
+      }
+    }
+
+    if (initialized) {
+      try {
+        await Supabase.instance.client.auth.signInAnonymously()
+            .timeout(const Duration(seconds: 10));
+      } catch (e) {
+        LoggerService.instance.log.severe('Anonymous sign-in failed', e);
+      }
+    }
+
+    final container = ProviderContainer();
+    final router = buildAppRouter(container);
+
+    FlutterError.onError = (details) {
+      LoggerService.instance.log.severe(
+        'Flutter framework error',
+        details.exception,
+        details.stack ?? StackTrace.empty,
+      );
+      final reporter = container.read(errorReporterProvider);
+      unawaited(
+        reporter.report(
+          details.exception,
+          details.stack ?? StackTrace.empty,
+          context: {'library': details.library},
+        ),
+      );
+      FlutterError.dumpErrorToConsole(details);
+    };
+
+    if (!initialized) {
+      runApp(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Text('Initialization failed. Check logs for details.'),
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
+    runApp(
+      UncontrolledProviderScope(
+        container: container,
+        child: ErrorBoundary(
+          child: MainApp(router: router),
+        ),
+      ),
     );
-  }
-
-  // Build a single ProviderContainer that owns the auth-driven GoRouter.
-  // Using UncontrolledProviderScope means widgets in the tree read from
-  // this container (which already has the auth listener wired).
-  final container = ProviderContainer();
-  final router = buildAppRouter(container);
-
-  runApp(
-    UncontrolledProviderScope(
-      container: container,
-      child: MainApp(router: router),
-    ),
-  );
+  }, (error, stack) async {
+    LoggerService.instance.log.severe('Uncaught zone error', error, stack);
+  });
 }
 
 class MainApp extends StatelessWidget {

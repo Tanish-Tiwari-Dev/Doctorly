@@ -1,0 +1,9 @@
+# Android build config
+org.gradle.jvmargs=-Xmx8G -XX:MaxMetaspaceSize=4G -XX:ReservedCodeCacheSize=512m -XX:+HeapDumpOnOutOfMemoryError
+android.useAndroidX=true
+android.newDsl=false
+android.builtInKotlin=false
+
+# Supabase config (injected via --dart-define-from-file=env.json)
+SUPABASE_URL=YOUR_SUPABASE_URL
+SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY

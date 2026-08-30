@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'doctor_provider.dart';
+import '../providers/supabase_client_provider.dart';
 
 class AuthState {
   const AuthState({this.session, this.user});

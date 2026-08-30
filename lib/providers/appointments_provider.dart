@@ -1,23 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/appointment.dart';
 import 'auth_provider.dart';
-import 'doctor_provider.dart';
+import '../repositories/appointments_repository.dart';
+import '../utils/error_localizer.dart';
+import '../utils/repository_exception.dart';
 
 class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
   @override
   Future<List<Appointment>> build() async {
     final userId = ref.watch(currentUserIdProvider);
     if (userId == null) return <Appointment>[];
-    final client = ref.read(supabaseClientProvider);
-    final res = await client
-        .from('appointments')
-        .select()
-        .eq('user_id', userId)
-        .order('scheduled_for', ascending: true);
-    return (res as List)
-        .cast<Map<String, dynamic>>()
-        .map(Appointment.fromJson)
-        .toList();
+    final repo = ref.read(appointmentsRepositoryProvider);
+    try {
+      return await repo.fetchForUser(userId);
+    } on RepositoryException catch (e) {
+      throw AsyncError(localizeError(e), StackTrace.current);
+    }
   }
 
   Future<void> create(String doctorId, DateTime scheduledFor) async {
@@ -29,15 +27,13 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
       );
       throw StateError('Not signed in');
     }
-    final client = ref.read(supabaseClientProvider);
+    final repo = ref.read(appointmentsRepositoryProvider);
     try {
-      await client.from('appointments').insert({
-        'user_id': userId,
-        'doctor_id': doctorId,
-        'scheduled_for': scheduledFor.toUtc().toIso8601String(),
-        'status': 'pending',
-      });
+      await repo.create(userId, doctorId, scheduledFor);
       ref.invalidateSelf();
+    } on RepositoryException catch (e) {
+      state = AsyncValue.error(localizeError(e), StackTrace.current);
+      rethrow;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       rethrow;
@@ -53,14 +49,12 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
       );
       return;
     }
-    final client = ref.read(supabaseClientProvider);
+    final repo = ref.read(appointmentsRepositoryProvider);
     try {
-      await client
-          .from('appointments')
-          .update({'status': 'cancelled'})
-          .eq('id', appointmentId)
-          .eq('user_id', userId);
+      await repo.cancel(appointmentId);
       ref.invalidateSelf();
+    } on RepositoryException catch (e) {
+      state = AsyncValue.error(localizeError(e), StackTrace.current);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       rethrow;

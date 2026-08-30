@@ -1,39 +1,37 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../env.dart';
 import '../models/doctor.dart';
 import '../models/specialty.dart';
-import '../repositories/doctor_repository.dart';
+import '../repositories/doctors_repository.dart';
+import '../utils/error_localizer.dart';
+import '../utils/repository_exception.dart';
+import 'supabase_client_provider.dart';
 
-final supabaseClientProvider = Provider<SupabaseClient>((ref) {
-  // Supabase.instance throws an assertion if accessed before
-  // Supabase.initialize() ran. Surface a clearer error instead.
-  if (!Env.isConfigured) {
-    throw StateError(
-      'Supabase is not configured. Add SUPABASE_URL and '
-      'SUPABASE_PUBLISHABLE_KEY to a .env file (see .env.example) or pass '
-      'them via --dart-define.',
-    );
-  }
-  return Supabase.instance.client;
-});
-
-final doctorRepositoryProvider = Provider<DoctorRepository>((ref) {
-  return DoctorRepository(ref.watch(supabaseClientProvider));
+final doctorRepositoryProvider = Provider<DoctorsRepository>((ref) {
+  return DoctorsRepository(ref.read(supabaseClientProvider));
 });
 
 class DoctorsNotifier extends AsyncNotifier<List<Doctor>> {
   @override
   Future<List<Doctor>> build() async {
     final repo = ref.read(doctorRepositoryProvider);
-    return repo.fetchAll(orderBy: 'rating');
+    try {
+      return await repo.fetchAll(orderBy: 'rating');
+    } on RepositoryException catch (e) {
+      throw AsyncError(localizeError(e), StackTrace.current);
+    }
   }
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repo = ref.read(doctorRepositoryProvider);
-      return repo.fetchAll(orderBy: 'rating');
+      try {
+        return await repo.fetchAll(orderBy: 'rating');
+      } on RepositoryException catch (e) {
+        throw AsyncError(localizeError(e), StackTrace.current);
+      }
     });
   }
 }
@@ -48,13 +46,6 @@ final doctorByIdProvider = Provider.family<Doctor?, String>((ref, id) {
   return index == -1 ? null : doctors[index];
 });
 
-final sortedDoctorsProvider = Provider<List<Doctor>>((ref) {
-  final doctors = ref.watch(doctorListProvider).valueOrNull ?? const [];
-  final sorted = List<Doctor>.of(doctors);
-  sorted.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
-  return sorted;
-});
-
 final topRatedDoctorsProvider = Provider<AsyncValue<List<Doctor>>>((ref) {
   return ref.watch(doctorListProvider).whenData((doctors) {
     final sorted = [...doctors]..sort((a, b) => b.rating.compareTo(a.rating));
@@ -62,11 +53,31 @@ final topRatedDoctorsProvider = Provider<AsyncValue<List<Doctor>>>((ref) {
   });
 });
 
-final searchQueryProvider = StateProvider<String>((ref) => '');
-
 final selectedSpecialtyProvider = StateProvider<Specialty?>((ref) => null);
 
 final nearbyResultsProvider = StateProvider<List<Doctor>?>((ref) => null);
+
+class SearchQueryNotifier extends Notifier<String> {
+  Timer? _debounce;
+
+  @override
+  String build() {
+    ref.onDispose(() {
+      _debounce?.cancel();
+    });
+    return '';
+  }
+
+  void setQuery(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      state = value;
+    });
+  }
+}
+
+final searchQueryProvider =
+    NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
 
 final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
   final nearby = ref.watch(nearbyResultsProvider);
@@ -83,10 +94,12 @@ final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
     }).toList();
   }
 
-  final doctors = ref.watch(sortedDoctorsProvider);
+  final doctors = ref.watch(doctorListProvider).valueOrNull ?? const [];
+  final sorted = List<Doctor>.of(doctors);
+  sorted.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
   final query = ref.watch(searchQueryProvider).trim().toLowerCase();
   final specialty = ref.watch(selectedSpecialtyProvider);
-  return doctors.where((doctor) {
+  return sorted.where((doctor) {
     final matchQuery = query.isEmpty ||
         doctor.name.toLowerCase().contains(query) ||
         doctor.specialty.toLowerCase().contains(query);

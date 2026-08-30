@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth_provider.dart';
-import 'doctor_provider.dart';
+import '../repositories/favorites_repository.dart';
+import '../utils/error_localizer.dart';
+import '../utils/repository_exception.dart';
 
 class FavoritesNotifier extends AsyncNotifier<Set<String>> {
   @override
@@ -8,16 +10,10 @@ class FavoritesNotifier extends AsyncNotifier<Set<String>> {
     final userId = ref.watch(currentUserIdProvider);
     if (userId == null) return <String>{};
     try {
-      final client = ref.read(supabaseClientProvider);
-      final res = await client
-          .from('favorites')
-          .select('doctor_id')
-          .eq('user_id', userId);
-      final ids = (res as List)
-          .cast<Map<String, dynamic>>()
-          .map((row) => row['doctor_id'] as String)
-          .toSet();
-      return ids;
+      final repo = ref.read(favoritesRepositoryProvider);
+      return await repo.fetchForUser(userId);
+    } on RepositoryException catch (e) {
+      throw AsyncError(localizeError(e), StackTrace.current);
     } catch (e, st) {
       throw AsyncError('Could not load favorites.', st);
     }
@@ -33,16 +29,16 @@ class FavoritesNotifier extends AsyncNotifier<Set<String>> {
       return;
     }
     final current = state.valueOrNull ?? <String>{};
-    final client = ref.read(supabaseClientProvider);
+    final repo = ref.read(favoritesRepositoryProvider);
 
     if (current.contains(doctorId)) {
       state = AsyncValue.data({...current}..remove(doctorId));
       try {
-        await client
-            .from('favorites')
-            .delete()
-            .eq('user_id', userId)
-            .eq('doctor_id', doctorId);
+        await repo.remove(userId, doctorId);
+      } on RepositoryException catch (e) {
+        state = AsyncValue.data(current);
+        state = AsyncValue.error(localizeError(e), StackTrace.current);
+        rethrow;
       } catch (e, st) {
         state = AsyncValue.data(current);
         state = AsyncValue.error(e, st);
@@ -51,10 +47,11 @@ class FavoritesNotifier extends AsyncNotifier<Set<String>> {
     } else {
       state = AsyncValue.data({...current, doctorId});
       try {
-        await client.from('favorites').insert({
-          'user_id': userId,
-          'doctor_id': doctorId,
-        });
+        await repo.add(userId, doctorId);
+      } on RepositoryException catch (e) {
+        state = AsyncValue.data(current);
+        state = AsyncValue.error(localizeError(e), StackTrace.current);
+        rethrow;
       } catch (e, st) {
         state = AsyncValue.data(current);
         state = AsyncValue.error(e, st);

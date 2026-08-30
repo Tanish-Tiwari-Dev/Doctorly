@@ -1,11 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../providers/appointments_provider.dart';
 import '../providers/booking_provider.dart';
 import '../providers/doctor_provider.dart';
+import '../utils/app_colors.dart';
 
 class BookingScreen extends ConsumerWidget {
   const BookingScreen({super.key, required this.doctorId});
@@ -51,7 +52,7 @@ class BookingScreen extends ConsumerWidget {
           SnackBar(
             content: Text(
               'Appointment confirmed!',
-              style: GoogleFonts.inter(),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
         );
@@ -63,7 +64,7 @@ class BookingScreen extends ConsumerWidget {
           SnackBar(
             content: Text(
               'Could not book. Try again.',
-              style: GoogleFonts.inter(),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
         );
@@ -85,9 +86,9 @@ class BookingScreen extends ConsumerWidget {
 
     if (doctor == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: AppColors.background,
         body: const Center(
-          child: CircularProgressIndicator(color: Color(0xFF0A6EBD)),
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
       );
     }
@@ -97,16 +98,15 @@ class BookingScreen extends ConsumerWidget {
     final canConfirm = selectedDate != null && selectedTime != null && !submitting;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Book Appointment',
-          style: GoogleFonts.inter(
-            fontSize: 18,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
       ),
@@ -122,7 +122,7 @@ class BookingScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+                    color: AppColors.textPrimary.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -132,12 +132,12 @@ class BookingScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: const Color(0xFFF1F5F9),
+                    backgroundColor: AppColors.avatarBackground,
                     backgroundImage: doctor.imageUrl.isNotEmpty
-                        ? NetworkImage(doctor.imageUrl)
+                        ? CachedNetworkImageProvider(doctor.imageUrl)
                         : null,
                     child: doctor.imageUrl.isEmpty
-                        ? const Icon(Icons.person, color: Color(0xFF64748B))
+                        ? const Icon(Icons.person, color: AppColors.textSecondary)
                         : null,
                   ),
                   const SizedBox(width: 12),
@@ -147,19 +147,17 @@ class BookingScreen extends ConsumerWidget {
                       children: [
                         Text(
                           doctor.name,
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
+                            color: AppColors.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           doctor.specialty,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: const Color(0xFF64748B),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -182,10 +180,9 @@ class BookingScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Select Date',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -198,7 +195,7 @@ class BookingScreen extends ConsumerWidget {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F5),
+                        color: AppColors.background,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -208,13 +205,13 @@ class BookingScreen extends ConsumerWidget {
                             selectedDate != null
                                 ? DateFormat('EEE, MMM d').format(selectedDate)
                                 : 'Choose a date',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF0F172A),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const Icon(
                             Icons.calendar_today,
-                            color: Color(0xFF0A6EBD),
+                            color: AppColors.primary,
                             size: 20,
                           ),
                         ],
@@ -236,10 +233,9 @@ class BookingScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Select Time',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -251,7 +247,7 @@ class BookingScreen extends ConsumerWidget {
                       return ChoiceChip(
                         label: Text(
                           time,
-                          style: GoogleFonts.inter(fontSize: 14),
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                         selected: selected,
                         onSelected: (isSelected) {
@@ -264,12 +260,12 @@ class BookingScreen extends ConsumerWidget {
                                 );
                           }
                         },
-                        selectedColor: const Color(0xFF0A6EBD),
-                        backgroundColor: const Color(0xFFF5F5F5),
-                        labelStyle: GoogleFonts.inter(
+                        selectedColor: AppColors.primary,
+                        backgroundColor: AppColors.background,
+                        labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: selected
                               ? Colors.white
-                              : const Color(0xFF0F172A),
+                              : AppColors.textPrimary,
                         ),
                         side: BorderSide.none,
                         shape: const StadiumBorder(),
@@ -288,16 +284,16 @@ class BookingScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           decoration: const BoxDecoration(
             color: Colors.white,
-            border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+            border: Border(top: BorderSide(color: AppColors.divider)),
           ),
           child: FilledButton(
             onPressed: canConfirm
                 ? () => _confirmBooking(context, ref, doctor.id)
                 : null,
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF0A6EBD),
+              backgroundColor: AppColors.primary,
               disabledBackgroundColor:
-                  const Color(0xFF0A6EBD).withValues(alpha: 0.5),
+                  AppColors.primary.withValues(alpha: 0.5),
               minimumSize: const Size(double.infinity, 56),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -305,9 +301,9 @@ class BookingScreen extends ConsumerWidget {
             ),
             child: Text(
               'Confirm Booking',
-              style: GoogleFonts.inter(
-                fontSize: 16,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
           ),
