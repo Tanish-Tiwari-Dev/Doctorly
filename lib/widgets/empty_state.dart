@@ -40,10 +40,7 @@ class EmptyState extends StatelessWidget {
           ],
           if (onRetry != null) ...[
             const SizedBox(height: 24),
-            FilledButton(
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
+            FilledButton(onPressed: onRetry, child: const Text('Retry')),
           ],
         ],
       ),

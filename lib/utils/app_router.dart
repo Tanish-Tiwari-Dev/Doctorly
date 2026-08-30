@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../providers/auth_provider.dart';
 import '../screens/appointments_screen.dart';
 import '../screens/auth_screen.dart';
@@ -27,20 +28,18 @@ GoRouter buildAppRouter(ProviderContainer container) {
     refreshListenable: refresh,
     redirect: (context, state) {
       final auth = container.read(authProvider);
-      final isAuthLoading = auth.isLoading || !auth.hasValue;
-      if (isAuthLoading) return null;
+      if (auth.isLoading) return null;
 
-      final session = auth.valueOrNull;
-      final signedIn = session?.isSignedIn ?? false;
+      final signedIn = auth.valueOrNull?.isSignedIn ?? false;
       final loc = state.matchedLocation;
 
       const publicPaths = {'/onboarding', '/login'};
       if (!signedIn) {
         if (publicPaths.contains(loc)) return null;
-        return '/onboarding';
+        return '/login';
       }
-      if (signedIn && (loc == '/onboarding' || loc == '/login')) {
-        return '/home';
+      if (loc == '/onboarding' || loc == '/login') {
+        return '/';
       }
       return null;
     },
@@ -55,11 +54,7 @@ GoRouter buildAppRouter(ProviderContainer container) {
         name: 'login',
         builder: (context, state) => const AuthScreen(),
       ),
-      GoRoute(
-        path: '/home',
-        name: 'home',
-        redirect: (context, state) => '/',
-      ),
+      GoRoute(path: '/home', name: 'home', redirect: (context, state) => '/'),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return BottomNavScaffold(navigationShell: navigationShell);

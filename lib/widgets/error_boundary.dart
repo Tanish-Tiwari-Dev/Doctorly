@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../providers/error_reporter_provider.dart';
 import '../services/logger.dart';
 
 class ErrorBoundary extends ConsumerStatefulWidget {
-  const ErrorBoundary({
-    super.key,
-    required this.child,
-  });
+  const ErrorBoundary({super.key, required this.child});
 
   final Widget child;
 
@@ -69,7 +67,7 @@ class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 24),
-                   FilledButton(
+                  FilledButton(
                     onPressed: () {
                       setState(() {
                         _hasError = false;

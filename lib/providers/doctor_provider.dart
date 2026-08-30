@@ -1,16 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/doctor.dart';
 import '../models/specialty.dart';
 import '../repositories/doctors_repository.dart';
 import '../utils/error_localizer.dart';
 import '../utils/repository_exception.dart';
-import 'supabase_client_provider.dart';
-
-final doctorRepositoryProvider = Provider<DoctorsRepository>((ref) {
-  return DoctorsRepository(ref.read(supabaseClientProvider));
-});
 
 class DoctorsNotifier extends AsyncNotifier<List<Doctor>> {
   @override
@@ -36,8 +32,9 @@ class DoctorsNotifier extends AsyncNotifier<List<Doctor>> {
   }
 }
 
-final doctorListProvider =
-    AsyncNotifierProvider<DoctorsNotifier, List<Doctor>>(DoctorsNotifier.new);
+final doctorListProvider = AsyncNotifierProvider<DoctorsNotifier, List<Doctor>>(
+  DoctorsNotifier.new,
+);
 
 final doctorByIdProvider = Provider.family<Doctor?, String>((ref, id) {
   final doctors = ref.watch(doctorListProvider).valueOrNull;
@@ -76,8 +73,9 @@ class SearchQueryNotifier extends Notifier<String> {
   }
 }
 
-final searchQueryProvider =
-    NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
+final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
+  SearchQueryNotifier.new,
+);
 
 final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
   final nearby = ref.watch(nearbyResultsProvider);
@@ -85,7 +83,8 @@ final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
     final query = ref.watch(searchQueryProvider).trim().toLowerCase();
     final specialty = ref.watch(selectedSpecialtyProvider);
     return nearby.where((d) {
-      final matchQuery = query.isEmpty ||
+      final matchQuery =
+          query.isEmpty ||
           d.name.toLowerCase().contains(query) ||
           d.specialty.toLowerCase().contains(query);
       final matchSpecialty =
@@ -100,7 +99,8 @@ final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
   final query = ref.watch(searchQueryProvider).trim().toLowerCase();
   final specialty = ref.watch(selectedSpecialtyProvider);
   return sorted.where((doctor) {
-    final matchQuery = query.isEmpty ||
+    final matchQuery =
+        query.isEmpty ||
         doctor.name.toLowerCase().contains(query) ||
         doctor.specialty.toLowerCase().contains(query);
     final matchSpecialty =

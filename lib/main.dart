@@ -1,82 +1,36 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'env.dart';
+import 'providers/auth_provider.dart';
 import 'providers/error_reporter_provider.dart';
+import 'services/error_reporter.dart';
 import 'services/logger.dart';
+
 import 'utils/app_router.dart';
 import 'widgets/error_boundary.dart';
 
 Future<void> main() async {
-  await runZonedGuarded(() async {
+  Future<void> bootstrap() async {
     WidgetsFlutterBinding.ensureInitialized();
 
+    // Render a loading screen IMMEDIATELY to prevent Android from killing the app
+    runApp(
+      const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      ),
+    );
+
+    // Now do the heavy lifting
     await LoggerService.instance.initialize();
 
-    try {
-      await dotenv.load(fileName: '.env');
-    } catch (e, st) {
-      LoggerService.instance.log.warning('dotenv load failed', e, st);
-    }
-
-    final urlFromDefine = const String.fromEnvironment('SUPABASE_URL');
-    final keyFromDefine = const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
-    String? maybeUrl;
-    String? maybeKey;
-    try {
-      maybeUrl = dotenv.maybeGet('SUPABASE_URL');
-      maybeKey = dotenv.maybeGet('SUPABASE_PUBLISHABLE_KEY');
-    } catch (e, st) {
-      LoggerService.instance.log.warning('dotenv maybeGet failed', e, st);
-    }
-    Env.supabaseUrl = maybeUrl ??
-        (urlFromDefine.isNotEmpty ? urlFromDefine : '');
-    Env.supabasePublishableKey = maybeKey ??
-        (keyFromDefine.isNotEmpty ? keyFromDefine : '');
-
-    // Anonymous auth is currently used as a placeholder until real auth
-    // (email/OTP + Google + Apple) is implemented in Phase 8.
-    // Risk: anon auth can be abused for credential stuffing, spam, and
-    // rate-limit evasion because no identity barrier exists.
-    // Mitigation today: Supabase project-level rate limits + RLS.
-    // TODO(#8): Migrate to real auth providers and remove anonymous sign-in.
-    bool initialized = true;
-    try {
-      Env.requireConfigured();
-    } on ConfigurationException catch (e) {
-      LoggerService.instance.log.severe('Configuration error', e);
-      initialized = false;
-    }
-
-    if (initialized) {
-      try {
-        await Supabase.initialize(
-          url: Env.supabaseUrl,
-          publishableKey: Env.supabasePublishableKey,
-        );
-        LoggerService.instance.log.info('Supabase Initialized: ${Env.supabaseUrl}');
-      } catch (e, st) {
-        LoggerService.instance.log.severe('Supabase initialization failed', e, st);
-        initialized = false;
-      }
-    }
-
-    if (initialized) {
-      try {
-        await Supabase.instance.client.auth.signInAnonymously()
-            .timeout(const Duration(seconds: 10));
-      } catch (e) {
-        LoggerService.instance.log.severe('Anonymous sign-in failed', e);
-      }
-    }
-
     final container = ProviderContainer();
-    final router = buildAppRouter(container);
 
     FlutterError.onError = (details) {
       LoggerService.instance.log.severe(
@@ -95,9 +49,47 @@ Future<void> main() async {
       FlutterError.dumpErrorToConsole(details);
     };
 
+    bool initialized = true;
+    try {
+      Env.requireConfigured();
+    } on ConfigurationException catch (e) {
+      LoggerService.instance.log.severe('Configuration error', e);
+      initialized = false;
+    }
+
+    if (initialized) {
+      try {
+        await Supabase.initialize(
+          url: Env.supabaseUrl,
+          publishableKey: Env.supabasePublishableKey,
+        );
+        LoggerService.instance.log.info(
+          'Supabase Initialized: ${Env.supabaseUrl}',
+        );
+      } catch (e, st) {
+        LoggerService.instance.log.severe(
+          'Supabase initialization failed',
+          e,
+          st,
+        );
+        initialized = false;
+      }
+    }
+
+    if (initialized) {
+      try {
+        await container.read(authProvider.notifier).signInAnonymously();
+      } catch (e) {
+        LoggerService.instance.log.severe('Anonymous sign-in failed', e);
+      }
+    }
+
+    final router = buildAppRouter(container);
+
     if (!initialized) {
+      // If init failed, render the error screen instead of the loading screen
       runApp(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Center(
               child: Text('Initialization failed. Check logs for details.'),
@@ -108,17 +100,35 @@ Future<void> main() async {
       return;
     }
 
+    // If everything succeeded, render the actual app
     runApp(
       UncontrolledProviderScope(
         container: container,
-        child: ErrorBoundary(
-          child: MainApp(router: router),
-        ),
+        child: ErrorBoundary(child: MainApp(router: router)),
       ),
     );
-  }, (error, stack) async {
-    LoggerService.instance.log.severe('Uncaught zone error', error, stack);
-  });
+  }
+
+  // Run the app inside a guarded zone, with or without Sentry
+  if (Env.sentryDsn.isNotEmpty) {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = Env.sentryDsn;
+      },
+      appRunner: () => runZonedGuarded(() => bootstrap(), (error, stack) async {
+        LoggerService.instance.log.severe('Uncaught zone error', error, stack);
+        const SentryErrorReporter().report(
+          error,
+          stack,
+          context: {'source': 'runZonedGuarded'},
+        );
+      }),
+    );
+  } else {
+    runZonedGuarded(() => bootstrap(), (error, stack) {
+      LoggerService.instance.log.severe('Uncaught zone error', error, stack);
+    });
+  }
 }
 
 class MainApp extends StatelessWidget {
@@ -134,38 +144,36 @@ class MainApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.light,
         scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0A6EBD),
-        ).copyWith(
-          primary: const Color(0xFF0A6EBD),
-          surface: const Color(0xFFF5F5F5),
-          onSurface: const Color(0xFF0F172A),
-          secondary: const Color(0xFF64748B),
-        ),
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData.light().textTheme,
-        ).copyWith(
-          displayLarge: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
-          ),
-          headlineMedium: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
-          ),
-          titleLarge: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF0F172A),
-          ),
-          bodyLarge: const TextStyle(
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF0F172A),
-          ),
-          labelLarge: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF0A6EBD),
-          ),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0A6EBD))
+            .copyWith(
+              primary: const Color(0xFF0A6EBD),
+              surface: const Color(0xFFF5F5F5),
+              onSurface: const Color(0xFF0F172A),
+              secondary: const Color(0xFF64748B),
+            ),
+        textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme)
+            .copyWith(
+              displayLarge: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0F172A),
+              ),
+              headlineMedium: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0F172A),
+              ),
+              titleLarge: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+              ),
+              bodyLarge: const TextStyle(
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF0F172A),
+              ),
+              labelLarge: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0A6EBD),
+              ),
+            ),
         cardTheme: const CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -198,10 +206,7 @@ class MainApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(
-              color: Color(0xFF0A6EBD),
-              width: 2,
-            ),
+            borderSide: const BorderSide(color: Color(0xFF0A6EBD), width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -223,10 +228,7 @@ class MainApp extends StatelessWidget {
           elevation: 0,
           indicatorColor: const Color(0xFF0A6EBD).withValues(alpha: 0.12),
           labelTextStyle: WidgetStateProperty.all(
-            GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+            GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ),
       ),

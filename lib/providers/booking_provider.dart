@@ -19,7 +19,8 @@ class BookingState {
     );
   }
 
-  bool get isValid => scheduledFor != null && scheduledFor!.isAfter(DateTime.now());
+  bool get isValid =>
+      scheduledFor != null && scheduledFor!.isAfter(DateTime.now());
 
   BookingState copyWith({DateTime? date, TimeOfDay? time, bool clear = false}) {
     if (clear) return const BookingState();
@@ -44,5 +45,6 @@ class BookingNotifier extends Notifier<BookingState> {
   }
 }
 
-final bookingProvider =
-    NotifierProvider<BookingNotifier, BookingState>(BookingNotifier.new);
+final bookingProvider = NotifierProvider<BookingNotifier, BookingState>(
+  BookingNotifier.new,
+);

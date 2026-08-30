@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../models/appointment.dart';
 import '../providers/supabase_client_provider.dart';
 import '../utils/repository_exception.dart';
@@ -21,10 +22,7 @@ class AppointmentsRepository {
           .map((row) => Appointment.fromJson(row as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
@@ -46,10 +44,7 @@ class AppointmentsRepository {
           .single();
       return Appointment.fromJson(res);
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
@@ -60,15 +55,11 @@ class AppointmentsRepository {
           .update({'status': 'cancelled'})
           .eq('id', appointmentId);
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 }
 
-final appointmentsRepositoryProvider =
-    Provider<AppointmentsRepository>((ref) {
-      return AppointmentsRepository(ref.read(supabaseClientProvider));
-    });
+final appointmentsRepositoryProvider = Provider<AppointmentsRepository>((ref) {
+  return AppointmentsRepository(ref.read(supabaseClientProvider));
+});

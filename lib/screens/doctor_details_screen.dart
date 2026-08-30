@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../providers/doctor_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../utils/app_colors.dart';
@@ -43,6 +44,11 @@ class DoctorDetailsScreen extends ConsumerWidget {
         }
       }
     }
+
+    final activeExpertise = doctor.expertise.entries
+        .where((entry) => entry.value)
+        .map((entry) => entry.key)
+        .toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -152,10 +158,11 @@ class DoctorDetailsScreen extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             doctor.name,
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
                           ),
                         ),
                         Row(
@@ -168,10 +175,11 @@ class DoctorDetailsScreen extends ConsumerWidget {
                             const SizedBox(width: 4),
                             Text(
                               doctor.rating.toStringAsFixed(1),
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
                             ),
                           ],
                         ),
@@ -180,10 +188,20 @@ class DoctorDetailsScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(
                       doctor.specialty,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: AppColors.textSecondary),
                     ),
+                    if (doctor.qualification != null &&
+                        doctor.qualification!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        doctor.qualification!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                     if (doctor.isAvailableToday) ...[
                       const SizedBox(height: 12),
                       Row(
@@ -195,10 +213,11 @@ class DoctorDetailsScreen extends ConsumerWidget {
                           const SizedBox(width: 4),
                           Text(
                             'Available Today',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppColors.success,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: AppColors.success,
+                                  fontWeight: FontWeight.w500,
+                                ),
                           ),
                         ],
                       ),
@@ -215,32 +234,138 @@ class DoctorDetailsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Experienced ${doctor.specialty} dedicated to providing top-notch medical care.',
+                      doctor.designation != null && doctor.hospitalName != null
+                          ? '${doctor.designation} at ${doctor.hospitalName}.'
+                          : doctor.designation ??
+                                doctor.hospitalName ??
+                                'Experienced ${doctor.specialty} dedicated to providing top-notch medical care.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                         height: 1.5,
                       ),
                     ),
-                    if (doctor.address != null) ...[
+                    if (activeExpertise.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on,
-                            color: AppColors.primary,
-                            size: 20,
+                      Text(
+                        'Expertise',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Column(
+                        children: activeExpertise.map((item) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.check_circle_outline,
+                                  color: AppColors.primary,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    item,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: AppColors.textPrimary,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    if (doctor.languages != null &&
+                        doctor.languages!.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Languages',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        doctor.languages!,
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
+                    if ((doctor.phone != null && doctor.phone!.isNotEmpty) ||
+                        (doctor.email != null && doctor.email!.isNotEmpty) ||
+                        doctor.address != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Contact',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (doctor.phone != null && doctor.phone!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.phone,
+                                color: AppColors.primary,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                doctor.phone!,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.textSecondary),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              doctor.address!,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
+                        ),
+                      if (doctor.email != null && doctor.email!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.email,
+                                color: AppColors.primary,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                doctor.email!,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.textSecondary),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (doctor.address != null && doctor.address!.isNotEmpty)
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              color: AppColors.primary,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                doctor.address!,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.textSecondary),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                     ],
                     const SizedBox(height: 80),
                   ],
@@ -268,10 +393,8 @@ class DoctorDetailsScreen extends ConsumerWidget {
             ),
             child: Text(
               'Book Appointment',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
             ),
           ),
         ),

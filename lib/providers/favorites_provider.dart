@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'auth_provider.dart';
 import '../repositories/favorites_repository.dart';
 import '../utils/error_localizer.dart';
@@ -22,10 +23,7 @@ class FavoritesNotifier extends AsyncNotifier<Set<String>> {
   Future<void> toggle(String doctorId) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
-      state = AsyncValue.error(
-        StateError('Not signed in'),
-        StackTrace.current,
-      );
+      state = AsyncValue.error(StateError('Not signed in'), StackTrace.current);
       return;
     }
     final current = state.valueOrNull ?? <String>{};
@@ -65,5 +63,6 @@ class FavoritesNotifier extends AsyncNotifier<Set<String>> {
   }
 }
 
-final favoritesProvider =
-    AsyncNotifierProvider<FavoritesNotifier, Set<String>>(FavoritesNotifier.new);
+final favoritesProvider = AsyncNotifierProvider<FavoritesNotifier, Set<String>>(
+  FavoritesNotifier.new,
+);

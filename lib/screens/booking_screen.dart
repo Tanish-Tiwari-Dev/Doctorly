@@ -3,50 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
 import '../providers/appointments_provider.dart';
-import '../providers/booking_provider.dart';
 import '../providers/doctor_provider.dart';
+import '../repositories/availability_repository.dart';
 import '../utils/app_colors.dart';
 
-class BookingScreen extends ConsumerWidget {
+final availabilitySlotsProvider = FutureProvider.family<List<DateTime>, String>(
+  (ref, doctorId) async {
+    final repo = ref.watch(availabilityRepositoryProvider);
+    return repo.fetchSlots(doctorId);
+  },
+);
+
+class BookingScreen extends ConsumerStatefulWidget {
   const BookingScreen({super.key, required this.doctorId});
   final String doctorId;
 
-  static const _timeSlots = <String>['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
+  @override
+  ConsumerState<BookingScreen> createState() => _BookingScreenState();
+}
 
-  Future<void> _selectDate(BuildContext context, WidgetRef ref) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: ref.read(bookingProvider).date ??
-          DateTime(now.year, now.month, now.day + 1),
-      firstDate: DateTime.now(),
-      lastDate: now.add(const Duration(days: 60)),
-    );
-    if (picked != null) {
-      ref.read(bookingProvider.notifier).setDate(picked);
-    }
-  }
+class _BookingScreenState extends ConsumerState<BookingScreen> {
+  DateTime? _selectedSlot;
 
-  Future<void> _confirmBooking(
-    BuildContext context,
-    WidgetRef ref,
-    String doctorId,
-  ) async {
-    final booking = ref.read(bookingProvider);
-    if (booking.date == null || booking.time == null) return;
-    final scheduledFor = DateTime(
-      booking.date!.year,
-      booking.date!.month,
-      booking.date!.day,
-      booking.time!.hour,
-      booking.time!.minute,
-    );
+  Future<void> _confirmBooking(BuildContext context, String doctorId) async {
+    if (_selectedSlot == null) return;
     try {
       await ref
           .read(appointmentsProvider.notifier)
-          .create(doctorId, scheduledFor);
-      ref.read(bookingProvider.notifier).reset();
+          .create(doctorId, _selectedSlot!);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -72,16 +58,10 @@ class BookingScreen extends ConsumerWidget {
     }
   }
 
-  String _formatTimeOfDay(TimeOfDay t) {
-    final h = t.hour.toString().padLeft(2, '0');
-    final m = t.minute.toString().padLeft(2, '0');
-    return '$h:$m';
-  }
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final doctor = ref.watch(doctorByIdProvider(doctorId));
-    final booking = ref.watch(bookingProvider);
+  Widget build(BuildContext context) {
+    final doctor = ref.watch(doctorByIdProvider(widget.doctorId));
+    final slotsAsync = ref.watch(availabilitySlotsProvider(widget.doctorId));
     final submitting = ref.watch(appointmentsProvider).isLoading;
 
     if (doctor == null) {
@@ -93,9 +73,7 @@ class BookingScreen extends ConsumerWidget {
       );
     }
 
-    final selectedDate = booking.date;
-    final selectedTime = booking.time == null ? null : _formatTimeOfDay(booking.time!);
-    final canConfirm = selectedDate != null && selectedTime != null && !submitting;
+    final canConfirm = _selectedSlot != null && !submitting;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -137,7 +115,10 @@ class BookingScreen extends ConsumerWidget {
                         ? CachedNetworkImageProvider(doctor.imageUrl)
                         : null,
                     child: doctor.imageUrl.isEmpty
-                        ? const Icon(Icons.person, color: AppColors.textSecondary)
+                        ? const Icon(
+                            Icons.person,
+                            color: AppColors.textSecondary,
+                          )
                         : null,
                   ),
                   const SizedBox(width: 12),
@@ -147,18 +128,18 @@ class BookingScreen extends ConsumerWidget {
                       children: [
                         Text(
                           doctor.name,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           doctor.specialty,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textSecondary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -179,99 +160,73 @@ class BookingScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Select Date',
+                    'Available Time Slots',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  InkWell(
-                    onTap: () => _selectDate(context, ref),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                  slotsAsync.when(
+                    loading: () => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(12),
+                    ),
+                    error: (err, _) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        'Failed to load available slots.',
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: AppColors.error),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            selectedDate != null
-                                ? DateFormat('EEE, MMM d').format(selectedDate)
-                                : 'Choose a date',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textPrimary,
+                    ),
+                    data: (slots) {
+                      if (slots.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Text(
+                            'No available slots at this moment.',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                        );
+                      }
+                      final timeFormat = DateFormat('EEE, MMM d • h:mm a');
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: slots.map((slot) {
+                          final selected = _selectedSlot == slot;
+                          return ChoiceChip(
+                            label: Text(
+                              timeFormat.format(slot),
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
-                          ),
-                          const Icon(
-                            Icons.calendar_today,
-                            color: AppColors.primary,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Select Time',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _timeSlots.map((time) {
-                      final selected = selectedTime == time;
-                      return ChoiceChip(
-                        label: Text(
-                          time,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        selected: selected,
-                        onSelected: (isSelected) {
-                          if (isSelected) {
-                            ref.read(bookingProvider.notifier).setTime(
-                                  TimeOfDay(
-                                    hour: int.parse(time.split(':')[0]),
-                                    minute: 0,
-                                  ),
-                                );
-                          }
-                        },
-                        selectedColor: AppColors.primary,
-                        backgroundColor: AppColors.background,
-                        labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: selected
-                              ? Colors.white
-                              : AppColors.textPrimary,
-                        ),
-                        side: BorderSide.none,
-                        shape: const StadiumBorder(),
-                        showCheckmark: false,
+                            selected: selected,
+                            onSelected: (isSelected) {
+                              setState(() {
+                                _selectedSlot = isSelected ? slot : null;
+                              });
+                            },
+                            selectedColor: AppColors.primary,
+                            backgroundColor: AppColors.background,
+                            labelStyle: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: selected
+                                      ? Colors.white
+                                      : AppColors.textPrimary,
+                                ),
+                            side: BorderSide.none,
+                            shape: const StadiumBorder(),
+                            showCheckmark: false,
+                          );
+                        }).toList(),
                       );
-                    }).toList(),
+                    },
                   ),
                 ],
               ),
@@ -288,24 +243,32 @@ class BookingScreen extends ConsumerWidget {
           ),
           child: FilledButton(
             onPressed: canConfirm
-                ? () => _confirmBooking(context, ref, doctor.id)
+                ? () => _confirmBooking(context, doctor.id)
                 : null,
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
-              disabledBackgroundColor:
-                  AppColors.primary.withValues(alpha: 0.5),
+              disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
               minimumSize: const Size(double.infinity, 56),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: Text(
-              'Confirm Booking',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
+            child: submitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    'Confirm Booking',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
           ),
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../models/doctor.dart';
 import '../providers/supabase_client_provider.dart';
 import '../utils/repository_exception.dart';
@@ -20,10 +21,7 @@ class DoctorsRepository {
           .map((row) => Doctor.fromJson(row as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
@@ -37,10 +35,7 @@ class DoctorsRepository {
       if (res == null) return null;
       return Doctor.fromJson(res);
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
@@ -50,20 +45,16 @@ class DoctorsRepository {
     double radiusKm = 5,
   }) async {
     try {
-      final res = await _client.rpc('nearby_doctors', params: {
-        'lat': lat,
-        'lng': lng,
-        'radius_km': radiusKm,
-      });
+      final res = await _client.rpc(
+        'nearby_doctors',
+        params: {'lat': lat, 'lng': lng, 'radius_km': radiusKm},
+      );
       final list = res as List;
       return list
           .map((row) => Doctor.fromJson(row as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
@@ -79,15 +70,11 @@ class DoctorsRepository {
           .map((row) => Doctor.fromJson(row as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 }
 
-final doctorsRepositoryProvider =
-    Provider<DoctorsRepository>((ref) {
-      return DoctorsRepository(ref.read(supabaseClientProvider));
-    });
+final doctorRepositoryProvider = Provider<DoctorsRepository>((ref) {
+  return DoctorsRepository(ref.read(supabaseClientProvider));
+});

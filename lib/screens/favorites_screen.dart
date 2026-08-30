@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../providers/doctor_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/doctor_card.dart';
+import '../widgets/doctor_card_skeleton.dart';
 import '../widgets/empty_state.dart';
 
 class FavoritesScreen extends ConsumerWidget {
@@ -15,11 +17,18 @@ class FavoritesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Favorites', style: Theme.of(context).textTheme.titleMedium),
+        title: Text(
+          'Favorites',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         centerTitle: false,
       ),
       body: favorites.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          itemCount: 4,
+          itemBuilder: (context, index) => const DoctorCardSkeleton(),
+        ),
         error: (e, _) => EmptyState(
           icon: Icons.error_outline,
           title: 'Could not load favorites.',

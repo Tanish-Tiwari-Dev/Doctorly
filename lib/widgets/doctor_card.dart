@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../models/doctor.dart';
 import '../providers/favorites_provider.dart';
 import '../utils/app_colors.dart';
@@ -151,8 +152,9 @@ class DoctorCard extends ConsumerWidget {
                               : AppColors.inactiveFavorite,
                           size: 22,
                         ),
-                        onPressed: () =>
-                            ref.read(favoritesProvider.notifier).toggle(doctor.id),
+                        onPressed: () => ref
+                            .read(favoritesProvider.notifier)
+                            .toggle(doctor.id),
                       ),
                     ),
                   ],

@@ -17,22 +17,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardingPageData(
       icon: Icons.health_and_safety,
       title: 'Your health,\nsimplified',
-      subtitle:
-          'Find trusted specialists, book appointments, and manage your care — all in one place.',
+      subtitle: 'Find trusted specialists, book appointments, and manage your care — all in one place.',
       gradient: [Color(0xFFE0F0FF), Color(0xFFFFFFFF)],
     ),
     _OnboardingPageData(
       icon: Icons.medical_services,
       title: 'Expert care,\non demand',
-      subtitle:
-          'Browse verified doctors by specialty, read reviews, and pick the one who fits your needs.',
+      subtitle: 'Browse verified doctors by specialty, read reviews, and pick the one who fits your needs.',
       gradient: [Color(0xFFE6F4F1), Color(0xFFFFFFFF)],
     ),
     _OnboardingPageData(
       icon: Icons.location_on,
       title: 'Care near you',
-      subtitle:
-          'Discover top-rated doctors around you and get directions, ratings, and availability in seconds.',
+      subtitle: 'Discover top-rated doctors around you and get directions, ratings, and availability in seconds.',
       gradient: [Color(0xFFEDE9FE), Color(0xFFFFFFFF)],
     ),
   ];
@@ -103,14 +100,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     },
                   ),
                 ),
-                _PageIndicators(
-                  count: _pages.length,
-                  current: _currentPage,
-                ),
+                _PageIndicators(count: _pages.length, current: _currentPage),
                 const SizedBox(height: 32),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
                   child: SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -180,11 +176,7 @@ class _OnboardingPage extends StatelessWidget {
               ],
             ),
             child: Center(
-              child: Icon(
-                page.icon,
-                size: 80,
-                color: const Color(0xFF0A6EBD),
-              ),
+              child: Icon(page.icon, size: 80, color: const Color(0xFF0A6EBD)),
             ),
           ),
           const SizedBox(height: 48),
@@ -233,9 +225,7 @@ class _PageIndicators extends StatelessWidget {
           width: isActive ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive
-                ? const Color(0xFF0A6EBD)
-                : Colors.grey[300],
+            color: isActive ? const Color(0xFF0A6EBD) : Colors.grey[300],
             borderRadius: BorderRadius.circular(10),
           ),
         );

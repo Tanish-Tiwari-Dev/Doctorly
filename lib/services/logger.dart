@@ -22,7 +22,8 @@ class LoggerService {
 
     Logger.root.onRecord.listen((record) {
       if (kReleaseMode && record.level < Level.INFO) return;
-      final message = '${record.level.name}: ${record.loggerName}: ${record.message}';
+      final message =
+          '${record.level.name}: ${record.loggerName}: ${record.message}';
       if (record.error != null) {
         debugPrint('$message\n${record.error}');
       } else {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
 import '../models/appointment.dart';
 import '../providers/appointments_provider.dart';
 import '../providers/doctor_provider.dart';
@@ -16,7 +17,10 @@ class AppointmentsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Appointments', style: Theme.of(context).textTheme.titleMedium),
+        title: Text(
+          'Appointments',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         centerTitle: false,
       ),
       body: appointments.when(
@@ -32,8 +36,7 @@ class AppointmentsScreen extends ConsumerWidget {
             return const EmptyState(
               icon: Icons.event_busy,
               title: 'No appointments yet.',
-              subtitle:
-                  "Book your first appointment from a doctor's profile.",
+              subtitle: "Book your first appointment from a doctor's profile.",
             );
           }
           final df = DateFormat('EEE, MMM d \u2022 h:mm a');
@@ -58,7 +61,7 @@ class AppointmentsScreen extends ConsumerWidget {
   }
 }
 
-class _AppointmentCard extends ConsumerWidget {
+class _AppointmentCard extends ConsumerStatefulWidget {
   const _AppointmentCard({
     required this.appointment,
     required this.doctorName,
@@ -72,23 +75,81 @@ class _AppointmentCard extends ConsumerWidget {
   final String formattedDate;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_AppointmentCard> createState() => _AppointmentCardState();
+}
+
+class _AppointmentCardState extends ConsumerState<_AppointmentCard> {
+  bool _isCancelling = false;
+
+  Future<void> _handleCancel() async {
+    setState(() {
+      _isCancelling = true;
+    });
+    try {
+      await ref
+          .read(appointmentsProvider.notifier)
+          .cancel(widget.appointment.id);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCancelling = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isPending = widget.appointment.status == AppointmentStatus.pending;
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor:
-              Theme.of(context).colorScheme.primaryContainer,
-          child: const Icon(Icons.event),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                child: const Icon(Icons.event),
+              ),
+              title: Text(
+                widget.doctorName,
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                '${widget.specialty} \u2022 ${widget.formattedDate}',
+              ),
+              trailing: _StatusChip(status: widget.appointment.status),
+            ),
+            if (isPending)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8, bottom: 4),
+                  child: TextButton(
+                    onPressed: _isCancelling ? null : _handleCancel,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                    ),
+                    child: _isCancelling
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.error,
+                              ),
+                            ),
+                          )
+                        : const Text('Cancel'),
+                  ),
+                ),
+              ),
+          ],
         ),
-        title: Text(
-          doctorName,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        subtitle: Text('$specialty \u2022 $formattedDate'),
-        trailing: _StatusChip(status: appointment.status),
       ),
     );
   }
@@ -117,11 +178,10 @@ class _StatusChip extends StatelessWidget {
         status == AppointmentStatus.pending
             ? 'Pending'
             : status == AppointmentStatus.confirmed
-                ? 'Confirmed'
-                : 'Cancelled',
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Colors.white,
-        ),
+            ? 'Confirmed'
+            : 'Cancelled',
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: Colors.white),
       ),
       backgroundColor: color,
       padding: EdgeInsets.zero,

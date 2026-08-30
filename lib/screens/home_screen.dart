@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/doctor.dart';
 import '../models/specialty.dart';
 import '../providers/doctor_provider.dart';
@@ -7,6 +8,7 @@ import '../providers/location_provider.dart';
 import '../providers/supabase_client_provider.dart';
 import '../utils/app_colors.dart';
 import '../widgets/doctor_card.dart';
+import '../widgets/doctor_card_skeleton.dart';
 import '../widgets/empty_state.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -28,8 +30,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _handleNearMe() async {
     try {
-      final granted =
-          await ref.read(locationServiceProvider).requestPermission();
+      final granted = await ref
+          .read(locationServiceProvider)
+          .requestPermission();
       if (!mounted) return;
 
       if (!granted) {
@@ -44,8 +47,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return;
       }
 
-      final position =
-          await ref.read(locationServiceProvider).getCurrentPosition();
+      final position = await ref
+          .read(locationServiceProvider)
+          .getCurrentPosition();
       if (!mounted) return;
 
       if (position == null) {
@@ -61,11 +65,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
 
       final client = ref.read(supabaseClientProvider);
-      final res = await client.rpc('nearby_doctors', params: {
-        'lat': position.latitude,
-        'lng': position.longitude,
-        'radius_km': 5.0,
-      });
+      final res = await client.rpc(
+        'nearby_doctors',
+        params: {
+          'lat': position.latitude,
+          'lng': position.longitude,
+          'radius_km': 5.0,
+        },
+      );
 
       final list = (res as List)
           .cast<Map<String, dynamic>>()
@@ -118,13 +125,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: asyncDoctors.when(
-          loading: () => const CustomScrollView(
+          loading: () => CustomScrollView(
             slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
+              SliverList.builder(
+                itemCount: 6,
+                itemBuilder: (context, index) => const DoctorCardSkeleton(),
               ),
             ],
           ),
@@ -144,7 +149,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
           data: (_) {
-            final topRated = ref.watch(topRatedDoctorsProvider).valueOrNull ?? const <Doctor>[];
+            final topRated =
+                ref.watch(topRatedDoctorsProvider).valueOrNull ??
+                const <Doctor>[];
             final filtered = ref.watch(filteredDoctorsProvider);
 
             return CustomScrollView(
@@ -161,14 +168,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             children: [
                               Text(
                                 'Hi, Welcome back 👋',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.textSecondary),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'Find your doctor',
-                                style: Theme.of(context).textTheme.headlineMedium,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium,
                               ),
                             ],
                           ),
@@ -218,16 +226,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       },
                       decoration: InputDecoration(
                         hintText: 'Search doctors, specialties…',
-                        hintStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textHint,
-                        ),
+                        hintStyle: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: AppColors.textHint),
                         prefixIcon: const Icon(
                           Icons.search,
                           size: 20,
                           color: AppColors.textHint,
                         ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                     ),
                   ),
@@ -248,83 +257,84 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           child: Text(
                             'Top Rated',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 160,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.only(
+                              left: 20,
+                              right: 20,
+                              bottom: 8,
+                            ),
+                            itemCount: topRated.length,
+                            itemExtent: 252,
+                            itemBuilder: (_, i) => SizedBox(
+                              width: 240,
+                              child: DoctorCard(
+                                doctor: topRated[i],
+                                compact: true,
+                              ),
                             ),
                           ),
                         ),
-                         SizedBox(
-                           height: 160,
-                           child: ListView.builder(
-                             scrollDirection: Axis.horizontal,
-                             padding: const EdgeInsets.only(
-                               left: 20,
-                               right: 20,
-                               bottom: 8,
-                             ),
-                             itemCount: topRated.length,
-                             itemExtent: 252,
-                             itemBuilder: (_, i) => SizedBox(
-                               width: 240,
-                               child: DoctorCard(doctor: topRated[i], compact: true),
-                             ),
-                           ),
-                         ),
                       ],
                     ),
                   ),
-                  if (filtered.isEmpty)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: EmptyState(
-                          icon: Icons.search_off,
-                          title: 'No doctors found',
-                          subtitle: 'Try a different search or filter.',
-                        ),
+                if (filtered.isEmpty)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: EmptyState(
+                        icon: Icons.search_off,
+                        title: 'No doctors found',
+                        subtitle: 'Try a different search or filter.',
                       ),
-                    )
-                  else
-                    SliverLayoutBuilder(
-                      builder: (context, constraints) {
-                        if (constraints.crossAxisExtent < 600) {
-                          return SliverList.builder(
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final doctor = filtered[index];
-                              return Column(
-                                children: [
-                                  DoctorCard(doctor: doctor),
-                                  if (index < filtered.length - 1)
-                                    const SizedBox(height: 8),
-                                ],
-                              );
-                            },
-                          );
-                        }
-                        return SliverGrid(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final doctor = filtered[index];
-                              return Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: DoctorCard(doctor: doctor),
-                              );
-                            },
-                            childCount: filtered.length,
-                          ),
-                          gridDelegate:
-                              const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 320,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 2.6,
-                          ),
-                        );
-                      },
                     ),
+                  )
+                else
+                  SliverLayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.crossAxisExtent < 600) {
+                        return SliverList.builder(
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final doctor = filtered[index];
+                            return Column(
+                              children: [
+                                DoctorCard(doctor: doctor),
+                                if (index < filtered.length - 1)
+                                  const SizedBox(height: 8),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                      return SliverGrid(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final doctor = filtered[index];
+                          return Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: DoctorCard(doctor: doctor),
+                          );
+                        }, childCount: filtered.length),
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 320,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 2.6,
+                            ),
+                      );
+                    },
+                  ),
               ],
             );
           },

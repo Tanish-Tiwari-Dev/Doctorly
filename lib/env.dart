@@ -6,11 +6,11 @@ class ConfigurationException implements Exception {
 }
 
 class Env {
-  // Populated by main() at startup from .env (preferred) or from
-  // --dart-define overrides (used by CI / build pipelines).
-  static String supabaseUrl = const String.fromEnvironment('SUPABASE_URL');
-  static String supabasePublishableKey =
-      const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+  static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  static const String supabasePublishableKey = String.fromEnvironment(
+    'SUPABASE_PUBLISHABLE_KEY',
+  );
+  static const String sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabasePublishableKey.isNotEmpty;
@@ -18,9 +18,8 @@ class Env {
   static void requireConfigured() {
     if (!isConfigured) {
       throw const ConfigurationException(
-        'Supabase is not configured. Add SUPABASE_URL and '
-        'SUPABASE_PUBLISHABLE_KEY to a .env file (see .env.example) or pass '
-        'them via --dart-define.',
+        'Supabase is not configured. Pass SUPABASE_URL and '
+        'SUPABASE_PUBLISHABLE_KEY via --dart-define.',
       );
     }
   }

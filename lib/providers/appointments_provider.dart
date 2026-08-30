@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/appointment.dart';
 import 'auth_provider.dart';
 import '../repositories/appointments_repository.dart';
@@ -21,10 +22,7 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
   Future<void> create(String doctorId, DateTime scheduledFor) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
-      state = AsyncValue.error(
-        StateError('Not signed in'),
-        StackTrace.current,
-      );
+      state = AsyncValue.error(StateError('Not signed in'), StackTrace.current);
       throw StateError('Not signed in');
     }
     final repo = ref.read(appointmentsRepositoryProvider);
@@ -43,10 +41,7 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
   Future<void> cancel(String appointmentId) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
-      state = AsyncValue.error(
-        StateError('Not signed in'),
-        StackTrace.current,
-      );
+      state = AsyncValue.error(StateError('Not signed in'), StackTrace.current);
       return;
     }
     final repo = ref.read(appointmentsRepositoryProvider);
@@ -64,5 +59,5 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
 
 final appointmentsProvider =
     AsyncNotifierProvider<AppointmentsNotifier, List<Appointment>>(
-  AppointmentsNotifier.new,
-);
+      AppointmentsNotifier.new,
+    );

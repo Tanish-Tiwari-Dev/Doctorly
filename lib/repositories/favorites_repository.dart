@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../providers/supabase_client_provider.dart';
 import '../utils/repository_exception.dart';
 
@@ -20,10 +21,7 @@ class FavoritesRepository {
           .toSet();
       return ids;
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
@@ -34,10 +32,7 @@ class FavoritesRepository {
         'doctor_id': doctorId,
       });
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
@@ -49,15 +44,11 @@ class FavoritesRepository {
           .eq('user_id', userId)
           .eq('doctor_id', doctorId);
     } catch (e) {
-      throw RepositoryException(
-        RepositoryExceptionKind.unknown,
-        e.toString(),
-      );
+      throw RepositoryException(classifyError(e), e.toString());
     }
   }
 }
 
-final favoritesRepositoryProvider =
-    Provider<FavoritesRepository>((ref) {
-      return FavoritesRepository(ref.read(supabaseClientProvider));
-    });
+final favoritesRepositoryProvider = Provider<FavoritesRepository>((ref) {
+  return FavoritesRepository(ref.read(supabaseClientProvider));
+});
