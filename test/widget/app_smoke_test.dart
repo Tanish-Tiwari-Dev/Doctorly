@@ -4,11 +4,7 @@ import 'package:doctorly/screens/onboarding_screen.dart';
 
 void main() {
   testWidgets('OnboardingScreen builds without errors', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: OnboardingScreen(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: OnboardingScreen()));
 
     expect(find.byType(OnboardingScreen), findsOneWidget);
     expect(find.text('Your health,\nsimplified'), findsOneWidget);

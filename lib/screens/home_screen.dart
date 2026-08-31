@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../models/doctor.dart';
 import '../models/specialty.dart';
 import '../providers/doctor_provider.dart';
 import '../providers/location_provider.dart';
-import '../providers/supabase_client_provider.dart';
+import '../repositories/doctors_repository.dart';
 import '../utils/app_colors.dart';
 import '../widgets/doctor_card.dart';
 import '../widgets/doctor_card_skeleton.dart';
@@ -64,20 +65,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return;
       }
 
-      final client = ref.read(supabaseClientProvider);
-      final res = await client.rpc(
-        'nearby_doctors',
-        params: {
-          'lat': position.latitude,
-          'lng': position.longitude,
-          'radius_km': 5.0,
-        },
-      );
-
-      final list = (res as List)
-          .cast<Map<String, dynamic>>()
-          .map(_doctorFromRpc)
-          .toList();
+      final list = await ref
+          .read(doctorRepositoryProvider)
+          .fetchNearby(position.latitude, position.longitude);
 
       ref.read(nearbyResultsProvider.notifier).state = list;
       setState(() => _nearbyActive = true);
@@ -115,7 +105,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Doctor _doctorFromRpc(Map<String, dynamic> row) => Doctor.fromJson(row);
 
   @override
   Widget build(BuildContext context) {
@@ -194,6 +183,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             tooltip: 'Near Me',
                             onPressed: _handleNearMe,
+                          ),
+                        ),
+                        SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(
+                              Icons.settings_outlined,
+                              color: AppColors.primary,
+                            ),
+                            tooltip: 'Settings',
+                            onPressed: () => context.push('/settings'),
                           ),
                         ),
                       ],

@@ -5,30 +5,53 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
-import '../providers/supabase_client_provider.dart';
 import '../repositories/auth_repository.dart';
 import '../services/logger.dart';
 
+/// State representation for authentication status.
 class AuthState {
   const AuthState({
     this.user,
     this.isLoading = false,
+    this.isSendingOtp = false,
+    this.isVerifyingOtp = false,
+    this.isSigningInGoogle = false,
+    this.isSigningInGuest = false,
+    this.otpSent = false,
+    this.emailForOtp,
+    this.authError,
     this.isMerging = false,
     this.mergeError,
   });
 
   final supabase.User? user;
   final bool isLoading;
+  final bool isSendingOtp;
+  final bool isVerifyingOtp;
+  final bool isSigningInGoogle;
+  final bool isSigningInGuest;
+  final bool otpSent;
+  final String? emailForOtp;
+  final String? authError;
   final bool isMerging;
   final String? mergeError;
 
   bool get isSignedIn => user != null;
+  bool get isAuthenticated => user != null;
   String? get userId => user?.id;
   String? get email => user?.email;
 
   AuthState copyWith({
     supabase.User? user,
     bool? isLoading,
+    bool? isSendingOtp,
+    bool? isVerifyingOtp,
+    bool? isSigningInGoogle,
+    bool? isSigningInGuest,
+    bool? otpSent,
+    String? emailForOtp,
+    String? authError,
+    bool clearAuthError = false,
     bool? isMerging,
     String? mergeError,
     bool clearMergeError = false,
@@ -36,12 +59,42 @@ class AuthState {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
+      isSendingOtp: isSendingOtp ?? this.isSendingOtp,
+      isVerifyingOtp: isVerifyingOtp ?? this.isVerifyingOtp,
+      isSigningInGoogle: isSigningInGoogle ?? this.isSigningInGoogle,
+      isSigningInGuest: isSigningInGuest ?? this.isSigningInGuest,
+      otpSent: otpSent ?? this.otpSent,
+      emailForOtp: emailForOtp ?? this.emailForOtp,
+      authError: clearAuthError ? null : (authError ?? this.authError),
       isMerging: isMerging ?? this.isMerging,
       mergeError: clearMergeError ? null : (mergeError ?? this.mergeError),
     );
   }
 }
 
+/// Helper function to convert authentication errors to human-readable strings.
+String humanizeAuthError(Object error) {
+  if (error is supabase.AuthException) {
+    final msg = error.message.toLowerCase();
+    if (msg.contains('invalid otp') ||
+        msg.contains('otp expired') ||
+        msg.contains('token has expired') ||
+        msg.contains('invalid token')) {
+      return 'Invalid or expired verification code. Please request a new code.';
+    }
+    if (msg.contains('rate limit') || msg.contains('too many requests')) {
+      return 'Too many attempts. Please wait a minute before trying again.';
+    }
+    if (msg.contains('invalid login credentials') ||
+        msg.contains('invalid credentials')) {
+      return 'Incorrect credentials. Please try again.';
+    }
+    return error.message;
+  }
+  return error.toString();
+}
+
+/// Notifier managing authentication state and actions.
 class AuthNotifier extends AsyncNotifier<AuthState> {
   StreamSubscription<void>? _subscription;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -49,11 +102,11 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
 
   @override
   Future<AuthState> build() async {
-    final client = ref.read(supabaseClientProvider);
-    _previousUserId = client.auth.currentUser?.id;
+    final authRepo = ref.read(authRepositoryProvider);
+    _previousUserId = authRepo.currentUser?.id;
 
-    _subscription = client.auth.onAuthStateChange.listen((_) {
-      final user = client.auth.currentUser;
+    _subscription = authRepo.onAuthStateChange.listen((_) {
+      final user = authRepo.currentUser;
       final newUserId = user?.id;
 
       if (newUserId != null &&
@@ -68,6 +121,12 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         AuthState(
           user: user,
           isLoading: false,
+          isSendingOtp: false,
+          isVerifyingOtp: false,
+          isSigningInGoogle: false,
+          isSigningInGuest: false,
+          otpSent: user != null ? false : (current?.otpSent ?? false),
+          emailForOtp: user != null ? null : current?.emailForOtp,
           isMerging: current?.isMerging ?? false,
           mergeError: current?.mergeError,
         ),
@@ -78,83 +137,192 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       _subscription?.cancel();
     });
 
-    return AuthState(user: client.auth.currentUser, isLoading: false);
+    return AuthState(user: authRepo.currentUser, isLoading: false);
   }
 
-  Future<void> signInAnonymously() async {
-    final client = ref.read(supabaseClientProvider);
-    final currentUser = client.auth.currentUser;
-    if (currentUser != null) {
+  /// Sends an 8-digit OTP code to the specified [email].
+  Future<void> sendOtp(String email) async {
+    final current = state.valueOrNull ?? const AuthState();
+    state = AsyncValue.data(
+      current.copyWith(isSendingOtp: true, clearAuthError: true),
+    );
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      await repo.signInWithOtp(email);
+      final updated = state.valueOrNull ?? const AuthState();
+      state = AsyncValue.data(
+        updated.copyWith(
+          isSendingOtp: false,
+          otpSent: true,
+          emailForOtp: email,
+        ),
+      );
+      LoggerService.instance.log.info('OTP code sent successfully to $email');
+    } catch (e, st) {
+      LoggerService.instance.log.severe('Failed to send OTP code', e, st);
+      final updated = state.valueOrNull ?? const AuthState();
+      state = AsyncValue.data(
+        updated.copyWith(isSendingOtp: false, authError: humanizeAuthError(e)),
+      );
+    }
+  }
+
+  /// Verifies the 8-digit OTP [token] for the stored email address.
+  Future<void> verifyOtp(String token) async {
+    final current = state.valueOrNull ?? const AuthState();
+    final email = current.emailForOtp;
+    if (email == null || email.isEmpty) {
+      state = AsyncValue.data(
+        current.copyWith(
+          authError: 'Session expired. Please request a new code.',
+        ),
+      );
       return;
     }
 
-    state = const AsyncValue.loading();
+    state = AsyncValue.data(
+      current.copyWith(isVerifyingOtp: true, clearAuthError: true),
+    );
     try {
-      await client.auth.signInAnonymously();
-      final userId = client.auth.currentUser?.id;
+      final repo = ref.read(authRepositoryProvider);
+      await repo.verifyOtp(email: email, token: token);
+      final updated = state.valueOrNull ?? const AuthState();
+      state = AsyncValue.data(
+        updated.copyWith(
+          isVerifyingOtp: false,
+          otpSent: false,
+          emailForOtp: null,
+          user: repo.currentUser,
+        ),
+      );
+      LoggerService.instance.log.info('OTP verification successful');
+    } catch (e, st) {
+      LoggerService.instance.log.severe('OTP verification failed', e, st);
+      final updated = state.valueOrNull ?? const AuthState();
+      state = AsyncValue.data(
+        updated.copyWith(
+          isVerifyingOtp: false,
+          authError: humanizeAuthError(e),
+        ),
+      );
+    }
+  }
+
+  /// Resets the OTP step back to email entry (Step 1).
+  void resetOtpStep() {
+    final current = state.valueOrNull ?? const AuthState();
+    state = AsyncValue.data(
+      current.copyWith(otpSent: false, emailForOtp: null, clearAuthError: true),
+    );
+  }
+
+  /// Clears any active authentication error message.
+  void clearAuthError() {
+    final current = state.valueOrNull;
+    if (current != null && current.authError != null) {
+      state = AsyncValue.data(current.copyWith(clearAuthError: true));
+    }
+  }
+
+  /// Initiates Google OAuth sign in.
+  Future<void> signInWithGoogle() async {
+    final current = state.valueOrNull ?? const AuthState();
+    state = AsyncValue.data(
+      current.copyWith(isSigningInGoogle: true, clearAuthError: true),
+    );
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final response = await repo.signInWithGoogle();
+      if (response == null) {
+        final updated = state.valueOrNull ?? const AuthState();
+        state = AsyncValue.data(updated.copyWith(isSigningInGoogle: false));
+        return;
+      }
+      final updated = state.valueOrNull ?? const AuthState();
+      state = AsyncValue.data(
+        updated.copyWith(user: repo.currentUser, isSigningInGoogle: false),
+      );
+    } catch (e, st) {
+      LoggerService.instance.log.severe('Google sign-in failed', e, st);
+      final updated = state.valueOrNull ?? const AuthState();
+      state = AsyncValue.data(
+        updated.copyWith(
+          isSigningInGoogle: false,
+          authError: humanizeAuthError(e),
+        ),
+      );
+    }
+  }
+
+  /// Signs in anonymously as a guest user.
+  Future<void> signInAnonymously() async {
+    final repo = ref.read(authRepositoryProvider);
+    if (repo.currentUser != null) {
+      return;
+    }
+
+    final current = state.valueOrNull ?? const AuthState();
+    state = AsyncValue.data(
+      current.copyWith(isSigningInGuest: true, clearAuthError: true),
+    );
+    try {
+      await repo.signInAnonymously();
+      final userId = repo.currentUser?.id;
       if (userId != null) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('cached_anonymous_user_id', userId);
       }
+      final updated = state.valueOrNull ?? const AuthState();
       state = AsyncValue.data(
-        AuthState(user: client.auth.currentUser, isLoading: false),
+        updated.copyWith(user: repo.currentUser, isSigningInGuest: false),
       );
     } catch (e, st) {
       LoggerService.instance.log.severe('Anonymous sign-in failed', e, st);
-      state = AsyncValue.error(e, st);
-    }
-  }
-
-  Future<void> signInWithGoogle() async {
-    state = const AsyncValue.loading();
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        final client = ref.read(supabaseClientProvider);
-        state = AsyncValue.data(
-          AuthState(user: client.auth.currentUser, isLoading: false),
-        );
-        return;
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final client = ref.read(supabaseClientProvider);
-      await client.auth.signInWithIdToken(
-        provider: supabase.OAuthProvider.google,
-        idToken: googleAuth.idToken!,
-      );
+      final updated = state.valueOrNull ?? const AuthState();
       state = AsyncValue.data(
-        AuthState(user: client.auth.currentUser, isLoading: false),
+        updated.copyWith(
+          isSigningInGuest: false,
+          authError: humanizeAuthError(e),
+        ),
       );
-    } catch (e, st) {
-      LoggerService.instance.log.severe('Google sign-in failed', e, st);
-      state = AsyncValue.error(e, st);
     }
   }
 
-  Future<void> signInWithOtp(String email) async {
-    try {
-      final client = ref.read(supabaseClientProvider);
-      await client.auth.signInWithOtp(email: email, emailRedirectTo: null);
-      final currentUser = client.auth.currentUser;
-      state = AsyncValue.data(AuthState(user: currentUser, isLoading: false));
-    } catch (e, st) {
-      LoggerService.instance.log.severe('OTP sign-in failed', e, st);
-      state = AsyncValue.error(e, st);
-    }
-  }
-
+  /// Signs out the current user.
   Future<void> signOut() async {
-    state = const AsyncValue.loading();
+    final current = state.valueOrNull ?? const AuthState();
+    state = AsyncValue.data(current.copyWith(isLoading: true));
     try {
       await _googleSignIn.signOut();
-      final client = ref.read(supabaseClientProvider);
-      await client.auth.signOut();
+      final repo = ref.read(authRepositoryProvider);
+      await repo.signOut();
       await _clearCachedAnonymousUserId();
+      state = const AsyncValue.data(AuthState(user: null, isLoading: false));
     } catch (e, st) {
       LoggerService.instance.log.severe('Sign out failed', e, st);
-      state = AsyncValue.error(e, st);
+      final updated = state.valueOrNull ?? const AuthState();
+      state = AsyncValue.data(
+        updated.copyWith(isLoading: false, authError: humanizeAuthError(e)),
+      );
+    }
+  }
+
+  /// Deletes the current user's account and signs out.
+  Future<void> deleteAccount() async {
+    final current = state.valueOrNull ?? const AuthState();
+    state = AsyncValue.data(current.copyWith(isLoading: true));
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      await repo.deleteUserAccount();
+      await signOut();
+      LoggerService.instance.log.info('User account deleted successfully.');
+    } catch (e, st) {
+      LoggerService.instance.log.severe('Account deletion failed', e, st);
+      final updated = state.valueOrNull ?? const AuthState();
+      state = AsyncValue.data(
+        updated.copyWith(isLoading: false, authError: humanizeAuthError(e)),
+      );
+      rethrow;
     }
   }
 
@@ -202,6 +370,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     }
   }
 
+  /// Clears any active data merge error.
   void clearMergeError() {
     final current = state.valueOrNull;
     if (current != null && current.mergeError != null) {
@@ -215,15 +384,18 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   }
 }
 
+/// Provider for managing authentication state and actions.
 final authProvider = AsyncNotifierProvider<AuthNotifier, AuthState>(
   AuthNotifier.new,
 );
 
+/// Provider returning the current user's ID.
 final currentUserIdProvider = Provider<String?>((ref) {
   final auth = ref.watch(authProvider);
   return auth.valueOrNull?.userId;
 });
 
+/// Provider returning whether guest data is currently merging.
 final isMergingProvider = Provider<bool>((ref) {
   final auth = ref.watch(authProvider);
   return auth.valueOrNull?.isMerging ?? false;

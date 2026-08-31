@@ -247,3 +247,32 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- 9) RPC: delete_user_account
+-- Deletes the calling user's appointments, favorites, profile, and auth record.
+
+create or replace function public.delete_user_account()
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare
+  v_user_id uuid;
+begin
+  v_user_id := auth.uid();
+
+  if v_user_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  delete from public.appointments where user_id = v_user_id;
+  delete from public.favorites where user_id = v_user_id;
+  delete from public.profiles where user_id = v_user_id;
+
+  delete from auth.users where id = v_user_id;
+end;
+$$;
+
+grant execute on function public.delete_user_account() to authenticated;
+

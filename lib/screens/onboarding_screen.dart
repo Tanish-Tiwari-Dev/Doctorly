@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-class OnboardingScreen extends StatefulWidget {
+import '../providers/onboarding_provider.dart';
+
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  bool _isCompleting = false;
 
   static const _pages = <_OnboardingPageData>[
     _OnboardingPageData(
@@ -47,12 +50,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeOutCubic,
       );
     } else {
-      _goLogin();
+      _completeAndNavigate();
     }
   }
 
-  void _goLogin() {
-    context.go('/login');
+  Future<void> _completeAndNavigate() async {
+    if (_isCompleting) return;
+    setState(() => _isCompleting = true);
+    await ref.read(onboardingProvider.notifier).completeOnboarding();
+    if (mounted) {
+      context.go('/login');
+    }
   }
 
   @override
@@ -68,7 +76,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               top: 8,
               right: 8,
               child: TextButton(
-                onPressed: _goLogin,
+                onPressed: _completeAndNavigate,
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF64748B),
                   padding: const EdgeInsets.symmetric(
@@ -78,10 +86,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 child: Text(
                   'Skip',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ),
             ),
@@ -120,7 +128,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
-                        textStyle: GoogleFonts.plusJakartaSans(
+                        textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -183,9 +191,7 @@ class _OnboardingPage extends StatelessWidget {
           Text(
             page.title,
             textAlign: TextAlign.center,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(
               color: Colors.black87,
               height: 1.15,
             ),
@@ -194,9 +200,7 @@ class _OnboardingPage extends StatelessWidget {
           Text(
             page.subtitle,
             textAlign: TextAlign.center,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Colors.grey[500],
               height: 1.5,
             ),

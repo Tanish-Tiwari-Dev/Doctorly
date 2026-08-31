@@ -1,14 +1,124 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../providers/supabase_client_provider.dart';
 import '../utils/repository_exception.dart';
 
+/// Repository for managing authentication calls via Supabase.
 class AuthRepository {
   AuthRepository(this._client);
 
   final SupabaseClient _client;
 
+  /// Gets the current Supabase user.
+  User? get currentUser => _client.auth.currentUser;
+
+  /// Stream of authentication state changes.
+  Stream<AuthState> get onAuthStateChange => _client.auth.onAuthStateChange;
+
+  /// Requests a passwordless Email OTP to be sent to [email].
+  Future<void> signInWithOtp(String email) async {
+    try {
+      await _client.auth.signInWithOtp(email: email, emailRedirectTo: null);
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw RepositoryException(classifyError(e), e.toString());
+    }
+  }
+
+  /// Verifies the 8-digit Email OTP [token] for [email].
+  Future<AuthResponse> verifyOtp({
+    required String email,
+    required String token,
+  }) async {
+    try {
+      return await _client.auth.verifyOTP(
+        email: email,
+        token: token,
+        type: OtpType.email,
+      );
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw RepositoryException(classifyError(e), e.toString());
+    }
+  }
+
+  /// Signs in using Google OAuth flow via [GoogleSignIn].
+  /// Returns [AuthResponse] on success, or `null` if the user cancels.
+  Future<AuthResponse?> signInWithGoogle() async {
+    try {
+      final googleSignIn = GoogleSignIn(scopes: ['email']);
+      final account = await googleSignIn.signIn();
+      if (account == null) {
+        return null;
+      }
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+      final accessToken = auth.accessToken;
+      if (idToken == null || idToken.isEmpty) {
+        throw const RepositoryException(
+          RepositoryExceptionKind.unauthorized,
+          'Google Auth ID token is unavailable.',
+        );
+      }
+      return await signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      if (e is RepositoryException) rethrow;
+      throw RepositoryException(classifyError(e), e.toString());
+    }
+  }
+
+  /// Signs in using an OAuth ID token.
+  Future<AuthResponse> signInWithIdToken({
+    required OAuthProvider provider,
+    required String idToken,
+    String? accessToken,
+  }) async {
+    try {
+      return await _client.auth.signInWithIdToken(
+        provider: provider,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw RepositoryException(classifyError(e), e.toString());
+    }
+  }
+
+  /// Signs in anonymously.
+  Future<AuthResponse> signInAnonymously() async {
+    try {
+      return await _client.auth.signInAnonymously();
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw RepositoryException(classifyError(e), e.toString());
+    }
+  }
+
+  /// Signs out the current user.
+  Future<void> signOut() async {
+    try {
+      await _client.auth.signOut();
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw RepositoryException(classifyError(e), e.toString());
+    }
+  }
+
+  /// Merges anonymous data into a newly authenticated user account.
   Future<void> mergeAnonymousData(String oldAnonId, String newUserId) async {
     try {
       await _client.rpc(
@@ -19,8 +129,20 @@ class AuthRepository {
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
+
+  /// Deletes the current user's account and associated data via RPC.
+  Future<void> deleteUserAccount() async {
+    try {
+      await _client.rpc('delete_user_account');
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw RepositoryException(classifyError(e), e.toString());
+    }
+  }
 }
 
+/// Provider for accessing [AuthRepository].
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.read(supabaseClientProvider));
 });

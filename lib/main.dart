@@ -151,29 +151,73 @@ class MainApp extends StatelessWidget {
               onSurface: const Color(0xFF0F172A),
               secondary: const Color(0xFF64748B),
             ),
-        textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme)
-            .copyWith(
-              displayLarge: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
-              ),
-              headlineMedium: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
-              ),
-              titleLarge: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF0F172A),
-              ),
-              bodyLarge: const TextStyle(
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF0F172A),
-              ),
-              labelLarge: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF0A6EBD),
-              ),
-            ),
+        textTheme: GoogleFonts.plusJakartaSansTextTheme(ThemeData.light().textTheme).copyWith(
+          displayLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 32,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF0F172A),
+          ),
+          headlineLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 30,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF0F172A),
+          ),
+          headlineMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF0F172A),
+          ),
+          headlineSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF0F172A),
+          ),
+          titleLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF0F172A),
+          ),
+          titleMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0F172A),
+          ),
+          titleSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0F172A),
+          ),
+          bodyLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFF0F172A),
+          ),
+          bodyMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFF0F172A),
+          ),
+          bodySmall: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFF64748B),
+          ),
+          labelLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0A6EBD),
+          ),
+          labelMedium: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF64748B),
+          ),
+          labelSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF64748B),
+          ),
+        ),
         cardTheme: const CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(

@@ -39,20 +39,26 @@ class DoctorsRepository {
     }
   }
 
-  Future<List<Doctor>> fetchNearby({
-    required double lat,
-    required double lng,
+  /// Fetches doctors near the specified [lat] and [lng] coordinates within [radiusKm].
+  Future<List<Doctor>> fetchNearby(
+    double lat,
+    double lng, {
     double radiusKm = 5,
+    int limit = 20,
   }) async {
     try {
       final res = await _client.rpc(
         'nearby_doctors',
         params: {'lat': lat, 'lng': lng, 'radius_km': radiusKm},
       );
-      final list = res as List;
-      return list
-          .map((row) => Doctor.fromJson(row as Map<String, dynamic>))
+      final list = (res as List)
+          .cast<Map<String, dynamic>>()
+          .map((row) => Doctor.fromJson(row))
           .toList();
+      if (list.length > limit) {
+        return list.sublist(0, limit);
+      }
+      return list;
     } catch (e) {
       throw RepositoryException(classifyError(e), e.toString());
     }

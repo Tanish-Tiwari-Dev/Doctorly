@@ -5,19 +5,23 @@ class LoggerService {
   LoggerService._();
 
   static final LoggerService instance = LoggerService._();
-  late final Logger log;
+  Logger? _log;
+
+  Logger get log => _log ??= Logger('Doctorly');
 
   Future<void> initialize() async {
+    if (_log != null) return;
+
     hierarchicalLoggingEnabled = true;
 
-    log = Logger('Doctorly');
+    _log = Logger('Doctorly');
 
     if (kReleaseMode) {
       Logger.root.level = Level.INFO;
-      log.level = Level.INFO;
+      _log!.level = Level.INFO;
     } else {
       Logger.root.level = Level.ALL;
-      log.level = Level.ALL;
+      _log!.level = Level.ALL;
     }
 
     Logger.root.onRecord.listen((record) {

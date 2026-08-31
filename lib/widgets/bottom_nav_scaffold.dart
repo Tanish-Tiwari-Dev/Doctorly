@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../providers/auth_provider.dart';
 import '../utils/app_colors.dart';
@@ -83,13 +82,19 @@ class BottomNavScaffold extends ConsumerWidget {
                     color: AppColors.textSecondary,
                     size: 24,
                   ),
-                  selectedLabelTextStyle: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
-                  unselectedLabelTextStyle: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
-                  ),
+                  selectedLabelTextStyle: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                  unselectedLabelTextStyle: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                   destinations: const [
                     NavigationRailDestination(
                       icon: Icon(Icons.home_outlined),

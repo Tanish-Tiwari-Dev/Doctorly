@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../providers/doctor_provider.dart';
 import '../providers/favorites_provider.dart';
@@ -37,7 +36,7 @@ class DoctorDetailsScreen extends ConsumerWidget {
             SnackBar(
               content: Text(
                 'Could not update favorite. Try again.',
-                style: GoogleFonts.inter(),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
           );
