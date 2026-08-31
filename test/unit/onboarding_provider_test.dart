@@ -1,5 +1,5 @@
-import 'package:doctorly/providers/onboarding_provider.dart';
-import 'package:doctorly/repositories/onboarding_repository.dart';
+import 'package:doctorly/features/onboarding/presentation/providers/onboarding_provider.dart';
+import 'package:doctorly/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:doctorly/services/logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

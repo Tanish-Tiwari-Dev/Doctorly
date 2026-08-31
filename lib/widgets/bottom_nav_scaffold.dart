@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../providers/auth_provider.dart';
-import '../utils/app_colors.dart';
+import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
+import 'package:doctorly/utils/app_colors.dart';
 
 class BottomNavScaffold extends ConsumerWidget {
   const BottomNavScaffold({super.key, required this.navigationShell});

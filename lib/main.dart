@@ -7,14 +7,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'env.dart';
-import 'providers/auth_provider.dart';
-import 'providers/error_reporter_provider.dart';
-import 'services/error_reporter.dart';
-import 'services/logger.dart';
+import 'package:doctorly/env.dart';
+import 'package:doctorly/providers/error_reporter_provider.dart';
+import 'package:doctorly/services/error_reporter.dart';
+import 'package:doctorly/services/logger.dart';
 
-import 'utils/app_router.dart';
-import 'widgets/error_boundary.dart';
+import 'package:doctorly/utils/app_router.dart';
+import 'package:doctorly/widgets/error_boundary.dart';
 
 Future<void> main() async {
   Future<void> bootstrap() async {
@@ -73,14 +72,6 @@ Future<void> main() async {
           st,
         );
         initialized = false;
-      }
-    }
-
-    if (initialized) {
-      try {
-        await container.read(authProvider.notifier).signInAnonymously();
-      } catch (e) {
-        LoggerService.instance.log.severe('Anonymous sign-in failed', e);
       }
     }
 

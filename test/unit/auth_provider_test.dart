@@ -1,4 +1,4 @@
-import 'package:doctorly/providers/auth_provider.dart';
+import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
@@ -17,7 +17,59 @@ void main() {
       expect(state.emailForOtp, null);
       expect(state.authError, null);
       expect(state.user, null);
+      expect(state.guestModeExplicitlyChosen, false);
+      expect(state.status, AuthStatus.unauthenticated);
       expect(state.isSignedIn, false);
+    });
+
+    test('AuthStatus resolves correctly for anonymous and authenticated users', () {
+      const stateNoUser = AuthState(user: null);
+      expect(stateNoUser.status, AuthStatus.unauthenticated);
+      expect(stateNoUser.isSignedIn, false);
+
+      final anonUser = supabase.User(
+        id: 'anon-123',
+        appMetadata: {},
+        userMetadata: {},
+        aud: 'authenticated',
+        createdAt: DateTime.now().toIso8601String(),
+        isAnonymous: true,
+      );
+
+      final stateAnonNotExplicit = AuthState(
+        user: anonUser,
+        guestModeExplicitlyChosen: false,
+      );
+      expect(stateAnonNotExplicit.status, AuthStatus.unauthenticated);
+      expect(stateAnonNotExplicit.isSignedIn, false);
+      expect(stateAnonNotExplicit.isGuest, false);
+
+      final stateAnonExplicit = AuthState(
+        user: anonUser,
+        guestModeExplicitlyChosen: true,
+      );
+      expect(stateAnonExplicit.status, AuthStatus.guest);
+      expect(stateAnonExplicit.isSignedIn, true);
+      expect(stateAnonExplicit.isGuest, true);
+
+      final realUser = supabase.User(
+        id: 'user-456',
+        appMetadata: {},
+        userMetadata: {},
+        aud: 'authenticated',
+        createdAt: DateTime.now().toIso8601String(),
+        email: 'doctor@example.com',
+        isAnonymous: false,
+      );
+
+      final stateRealUser = AuthState(
+        user: realUser,
+        guestModeExplicitlyChosen: false,
+      );
+      expect(stateRealUser.status, AuthStatus.authenticated);
+      expect(stateRealUser.isSignedIn, true);
+      expect(stateRealUser.isAuthenticated, true);
+      expect(stateRealUser.isGuest, false);
     });
 
     test('copyWith updates OTP states and authError correctly', () {

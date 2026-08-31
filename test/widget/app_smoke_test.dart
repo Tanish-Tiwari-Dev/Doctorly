@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:doctorly/screens/onboarding_screen.dart';
+import 'package:doctorly/features/onboarding/presentation/screens/onboarding_screen.dart';
 
 void main() {
   testWidgets('OnboardingScreen builds without errors', (tester) async {

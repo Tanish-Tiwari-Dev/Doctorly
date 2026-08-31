@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../providers/auth_provider.dart';
-import '../providers/onboarding_provider.dart';
-import '../screens/appointments_screen.dart';
-import '../screens/auth_screen.dart';
-import '../screens/booking_screen.dart';
-import '../screens/doctor_details_screen.dart';
-import '../screens/favorites_screen.dart';
-import '../screens/home_screen.dart';
-import '../screens/onboarding_screen.dart';
-import '../screens/settings_screen.dart';
-import '../widgets/bottom_nav_scaffold.dart';
+import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
+import 'package:doctorly/features/onboarding/presentation/providers/onboarding_provider.dart';
+import 'package:doctorly/features/appointments/presentation/screens/appointments_screen.dart';
+import 'package:doctorly/features/auth/presentation/screens/auth_screen.dart';
+import 'package:doctorly/features/appointments/presentation/screens/booking_screen.dart';
+import 'package:doctorly/features/doctor/presentation/screens/doctor_details_screen.dart';
+import 'package:doctorly/features/favorites/presentation/screens/favorites_screen.dart';
+import 'package:doctorly/features/doctor/presentation/screens/home_screen.dart';
+import 'package:doctorly/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:doctorly/features/auth/presentation/screens/settings_screen.dart';
+import 'package:doctorly/widgets/bottom_nav_scaffold.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 

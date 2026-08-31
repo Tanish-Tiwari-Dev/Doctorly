@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/error_reporter_provider.dart';
-import '../services/logger.dart';
+import 'package:doctorly/providers/error_reporter_provider.dart';
+import 'package:doctorly/services/logger.dart';
 
 class ErrorBoundary extends ConsumerStatefulWidget {
   const ErrorBoundary({super.key, required this.child});

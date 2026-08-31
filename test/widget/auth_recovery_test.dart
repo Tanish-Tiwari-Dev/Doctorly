@@ -1,5 +1,5 @@
-import 'package:doctorly/repositories/auth_repository.dart';
-import 'package:doctorly/screens/auth_screen.dart';
+import 'package:doctorly/features/auth/data/repositories/auth_repository.dart';
+import 'package:doctorly/features/auth/presentation/screens/auth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
