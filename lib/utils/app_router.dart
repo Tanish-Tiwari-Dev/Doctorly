@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/auth_provider.dart';
-import '../screens/appointments_screen.dart';
-import '../screens/auth_screen.dart';
-import '../screens/booking_screen.dart';
-import '../screens/doctor_details_screen.dart';
-import '../screens/favorites_screen.dart';
-import '../screens/home_screen.dart';
-import '../screens/onboarding_screen.dart';
-import '../widgets/bottom_nav_scaffold.dart';
+
+import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
+import 'package:doctorly/features/onboarding/presentation/providers/onboarding_provider.dart';
+import 'package:doctorly/features/appointments/presentation/screens/appointments_screen.dart';
+import 'package:doctorly/features/auth/presentation/screens/auth_screen.dart';
+import 'package:doctorly/features/appointments/presentation/screens/booking_screen.dart';
+import 'package:doctorly/features/doctor/presentation/screens/doctor_details_screen.dart';
+import 'package:doctorly/features/favorites/presentation/screens/favorites_screen.dart';
+import 'package:doctorly/features/doctor/presentation/screens/home_screen.dart';
+import 'package:doctorly/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:doctorly/features/auth/presentation/screens/settings_screen.dart';
+import 'package:doctorly/widgets/bottom_nav_scaffold.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -18,7 +21,12 @@ GoRouter buildAppRouter(ProviderContainer container) {
   container.listen<AsyncValue<AuthState>>(
     authProvider,
     (_, _) => refresh.value++,
-    fireImmediately: false,
+    fireImmediately: true,
+  );
+  container.listen<AsyncValue<bool>>(
+    onboardingProvider,
+    (_, _) => refresh.value++,
+    fireImmediately: true,
   );
 
   return GoRouter(
@@ -26,22 +34,44 @@ GoRouter buildAppRouter(ProviderContainer container) {
     initialLocation: '/onboarding',
     refreshListenable: refresh,
     redirect: (context, state) {
-      final auth = container.read(authProvider);
-      final isAuthLoading = auth.isLoading || !auth.hasValue;
-      if (isAuthLoading) return null;
+      final authAsync = container.read(authProvider);
+      final onboardingAsync = container.read(onboardingProvider);
 
-      final session = auth.valueOrNull;
-      final signedIn = session?.isSignedIn ?? false;
+      final isLoading =
+          authAsync.isLoading ||
+          onboardingAsync.isLoading ||
+          !authAsync.hasValue ||
+          !onboardingAsync.hasValue;
+
       final loc = state.matchedLocation;
 
-      const publicPaths = {'/onboarding', '/login'};
-      if (!signedIn) {
-        if (publicPaths.contains(loc)) return null;
+      // 1. While loading state, keep the user on /onboarding or /login,
+      // preventing premature access to protected routes like /
+      if (isLoading) {
+        if (loc == '/onboarding' || loc == '/login') {
+          return null;
+        }
         return '/onboarding';
       }
-      if (signedIn && (loc == '/onboarding' || loc == '/login')) {
-        return '/home';
+
+      final hasSeenOnboarding = onboardingAsync.valueOrNull ?? false;
+      final signedIn = authAsync.valueOrNull?.isSignedIn ?? false;
+
+      // 2. Force Onboarding if not completed
+      if (!hasSeenOnboarding) {
+        return loc == '/onboarding' ? null : '/onboarding';
       }
+
+      // 3. Force Login if not authenticated
+      if (!signedIn) {
+        return loc == '/login' ? null : '/login';
+      }
+
+      // 4. Only allow access to protected routes (e.g. /) when both onboarding and auth are complete
+      if (loc == '/onboarding' || loc == '/login') {
+        return '/';
+      }
+
       return null;
     },
     routes: [
@@ -55,11 +85,7 @@ GoRouter buildAppRouter(ProviderContainer container) {
         name: 'login',
         builder: (context, state) => const AuthScreen(),
       ),
-      GoRoute(
-        path: '/home',
-        name: 'home',
-        redirect: (context, state) => '/',
-      ),
+      GoRoute(path: '/home', name: 'home', redirect: (context, state) => '/'),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return BottomNavScaffold(navigationShell: navigationShell);
@@ -111,6 +137,12 @@ GoRouter buildAppRouter(ProviderContainer container) {
           final doctorId = state.pathParameters['doctorId']!;
           return BookingScreen(doctorId: doctorId);
         },
+      ),
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

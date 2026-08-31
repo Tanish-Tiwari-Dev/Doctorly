@@ -1,35 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-class BottomNavScaffold extends StatelessWidget {
+import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
+import 'package:doctorly/utils/app_colors.dart';
+
+class BottomNavScaffold extends ConsumerWidget {
   const BottomNavScaffold({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   static const _destinations = <NavigationDestination>[
     NavigationDestination(
-      icon: Icon(Icons.home_outlined, color: Color(0xFF94A3B8)),
-      selectedIcon: Icon(Icons.home, color: Color(0xFF0A6EBD)),
+      icon: Icon(Icons.home_outlined, color: AppColors.inactiveIcon),
+      selectedIcon: Icon(Icons.home, color: AppColors.primary),
       label: 'Home',
     ),
     NavigationDestination(
-      icon: Icon(Icons.favorite_border, color: Color(0xFF94A3B8)),
-      selectedIcon: Icon(Icons.favorite, color: Color(0xFF0A6EBD)),
+      icon: Icon(Icons.favorite_border, color: AppColors.inactiveIcon),
+      selectedIcon: Icon(Icons.favorite, color: AppColors.primary),
       label: 'Favorites',
     ),
     NavigationDestination(
-      icon: Icon(Icons.calendar_today_outlined, color: Color(0xFF94A3B8)),
-      selectedIcon: Icon(Icons.calendar_today, color: Color(0xFF0A6EBD)),
+      icon: Icon(Icons.calendar_today_outlined, color: AppColors.inactiveIcon),
+      selectedIcon: Icon(Icons.calendar_today, color: AppColors.primary),
       label: 'Appointments',
     ),
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMerging = ref.watch(isMergingProvider);
+
+    ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {
+      final mergeError = next.valueOrNull?.mergeError;
+      if (mergeError != null && mergeError.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.textPrimary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            content: Text(
+              mergeError,
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: Colors.white),
+            ),
+          ),
+        );
+        ref.read(authProvider.notifier).clearMergeError();
+      }
+    });
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth >= 600;
+        final mainContent = Column(
+          children: [
+            if (isMerging) const _MergeProgressBanner(),
+            Expanded(child: navigationShell),
+          ],
+        );
+
         if (isWide) {
           return Scaffold(
             backgroundColor: Colors.white,
@@ -40,19 +73,28 @@ class BottomNavScaffold extends StatelessWidget {
                   onDestinationSelected: _onTap,
                   labelType: NavigationRailLabelType.all,
                   backgroundColor: Colors.white,
-                  indicatorColor:
-                      const Color(0xFF0A6EBD).withValues(alpha: 0.12),
-                  selectedIconTheme:
-                      const IconThemeData(color: Color(0xFF0A6EBD), size: 24),
-                  unselectedIconTheme:
-                      const IconThemeData(color: Color(0xFF64748B), size: 24),
-                  selectedLabelTextStyle: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0A6EBD),
+                  indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+                  selectedIconTheme: const IconThemeData(
+                    color: AppColors.primary,
+                    size: 24,
                   ),
-                  unselectedLabelTextStyle: GoogleFonts.inter(
-                    color: const Color(0xFF64748B),
+                  unselectedIconTheme: const IconThemeData(
+                    color: AppColors.textSecondary,
+                    size: 24,
                   ),
+                  selectedLabelTextStyle: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                  unselectedLabelTextStyle: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                   destinations: const [
                     NavigationRailDestination(
                       icon: Icon(Icons.home_outlined),
@@ -74,16 +116,16 @@ class BottomNavScaffold extends StatelessWidget {
                 const VerticalDivider(
                   thickness: 1,
                   width: 1,
-                  color: Color(0xFFE5E7EB),
+                  color: AppColors.divider,
                 ),
-                Expanded(child: navigationShell),
+                Expanded(child: mainContent),
               ],
             ),
           );
         }
         return Scaffold(
           backgroundColor: Colors.white,
-          body: navigationShell,
+          body: mainContent,
           bottomNavigationBar: Container(
             margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             decoration: BoxDecoration(
@@ -91,7 +133,7 @@ class BottomNavScaffold extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+                  color: AppColors.textPrimary.withValues(alpha: 0.06),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -120,6 +162,43 @@ class BottomNavScaffold extends StatelessWidget {
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+}
+
+class _MergeProgressBanner extends StatelessWidget {
+  const _MergeProgressBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.primary,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Finalizing your account...',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

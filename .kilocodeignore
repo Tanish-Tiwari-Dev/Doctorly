@@ -1,0 +1,36 @@
+# Build artifacts
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.lock
+!pubspec.lock
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Secrets / env
+.env
+.env.*
+*.keystore
+*.jks
+key.properties
+
+# Generated
+.dart_tool/
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# Web
+web/icons/
+web/splash/
+
+# Misc
+coverage/
