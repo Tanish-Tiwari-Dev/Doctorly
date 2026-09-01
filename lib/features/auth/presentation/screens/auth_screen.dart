@@ -541,74 +541,116 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 }
 
-class _OtpPinInputWidget extends StatelessWidget {
+class _OtpPinInputWidget extends StatefulWidget {
   const _OtpPinInputWidget({required this.controller, required this.onChanged});
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
 
   @override
+  State<_OtpPinInputWidget> createState() => _OtpPinInputWidgetState();
+}
+
+class _OtpPinInputWidgetState extends State<_OtpPinInputWidget> {
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final text = controller.text;
+    final text = widget.controller.text;
 
-    return Stack(
-      children: [
-        // Hidden text field capturing keyboard inputs
-        Opacity(
-          opacity: 0.0,
-          child: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            maxLength: 8,
-            autofocus: true,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: onChanged,
-            decoration: const InputDecoration(counterText: ''),
+    return GestureDetector(
+      onTap: () => _focusNode.requestFocus(),
+      behavior: HitTestBehavior.opaque,
+      child: Stack(
+        children: [
+          // Hidden text field capturing keyboard inputs
+          Opacity(
+            opacity: 0.0,
+            child: Semantics(
+              label: 'OTP verification code input',
+              textField: true,
+              enabled: true,
+              child: TextField(
+                controller: widget.controller,
+                focusNode: _focusNode,
+                keyboardType: TextInputType.number,
+                maxLength: 8,
+                autofocus: false,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: widget.onChanged,
+                decoration: const InputDecoration(counterText: ''),
+              ),
+            ),
           ),
-        ),
-        // Visual 8-digit Pin Boxes
-        Row(
-          children: List.generate(8, (index) {
-            final digit = index < text.length ? text[index] : '';
-            final isFocused =
-                index == text.length || (index == 7 && text.length == 8);
+          // Visual 8-digit Pin Boxes
+          Row(
+            children: List.generate(8, (index) {
+              final digit = index < text.length ? text[index] : '';
+              final isFocused = _focusNode.hasFocus &&
+                  (index == text.length || (index == 7 && text.length == 8));
 
-            return Expanded(
-              child: Container(
-                height: 50,
-                margin: EdgeInsets.only(
-                  left: index == 0 ? 0 : 2.5,
-                  right: index == 7 ? 0 : 2.5,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isFocused
-                        ? AppColors.primary
-                        : (digit.isNotEmpty
-                              ? AppColors.textPrimary
-                              : AppColors.divider),
-                    width: isFocused ? 2.0 : 1.0,
-                  ),
-                ),
-                child: Center(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      digit,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+              return Expanded(
+                child: Semantics(
+                  label: 'OTP digit ${index + 1} of 8',
+                  textField: true,
+                  enabled: true,
+                  value: digit,
+                  child: Container(
+                    height: 50,
+                    margin: EdgeInsets.only(
+                      left: index == 0 ? 0 : 2.5,
+                      right: index == 7 ? 0 : 2.5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isFocused
+                            ? AppColors.primary
+                            : (digit.isNotEmpty
+                                  ? AppColors.textPrimary
+                                  : AppColors.divider),
+                        width: isFocused ? 2.0 : 1.0,
+                      ),
+                    ),
+                    child: Center(
+                      child: ExcludeSemantics(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            digit,
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
                           ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          }),
-        ),
-      ],
+              );
+            }),
+          ),
+        ],
+      ),
     );
   }
 }

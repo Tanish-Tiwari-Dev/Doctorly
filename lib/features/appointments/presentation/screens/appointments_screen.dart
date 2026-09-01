@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:doctorly/features/appointments/domain/models/appointment.dart';
 import 'package:doctorly/features/appointments/presentation/providers/appointments_provider.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
+import 'package:doctorly/features/appointments/presentation/widgets/appointment_card_skeleton.dart';
 import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/widgets/empty_state.dart';
 
@@ -24,7 +25,11 @@ class AppointmentsScreen extends ConsumerWidget {
         centerTitle: false,
       ),
       body: appointments.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          itemCount: 4,
+          itemBuilder: (context, index) => const AppointmentCardSkeleton(),
+        ),
         error: (e, _) => EmptyState(
           icon: Icons.cloud_off,
           title: 'Could not load appointments',

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
 import 'package:doctorly/features/favorites/presentation/providers/favorites_provider.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/doctor_card.dart';
-import 'package:doctorly/features/doctor/presentation/widgets/doctor_card_skeleton.dart';
+import 'package:doctorly/features/favorites/presentation/widgets/favorite_card_skeleton.dart';
 import 'package:doctorly/widgets/empty_state.dart';
 
 class FavoritesScreen extends ConsumerWidget {
@@ -27,7 +27,7 @@ class FavoritesScreen extends ConsumerWidget {
         loading: () => ListView.builder(
           padding: const EdgeInsets.symmetric(vertical: 8),
           itemCount: 4,
-          itemBuilder: (context, index) => const DoctorCardSkeleton(),
+          itemBuilder: (context, index) => const FavoriteCardSkeleton(),
         ),
         error: (e, _) => EmptyState(
           icon: Icons.error_outline,

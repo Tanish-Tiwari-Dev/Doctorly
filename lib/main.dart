@@ -9,10 +9,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:doctorly/env.dart';
 import 'package:doctorly/providers/error_reporter_provider.dart';
+import 'package:doctorly/services/cache_service.dart';
 import 'package:doctorly/services/error_reporter.dart';
 import 'package:doctorly/services/logger.dart';
+import 'package:doctorly/services/notification_service.dart';
 
 import 'package:doctorly/utils/app_router.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/widgets/error_boundary.dart';
 
 Future<void> main() async {
@@ -28,6 +31,8 @@ Future<void> main() async {
 
     // Now do the heavy lifting
     await LoggerService.instance.initialize();
+    await NotificationService.instance.initialize();
+    await CacheService.instance.initialize();
 
     final container = ProviderContainer();
 
@@ -134,98 +139,71 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0A6EBD))
+        scaffoldBackgroundColor: const Color(0xFFF7F9FC),
+        primaryColor: const Color(0xFF0A7E8C),
+        cardColor: Colors.white,
+        dividerColor: const Color(0xFFE5E7EB),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0A7E8C))
             .copyWith(
-              primary: const Color(0xFF0A6EBD),
-              surface: const Color(0xFFF5F5F5),
-              onSurface: const Color(0xFF0F172A),
-              secondary: const Color(0xFF64748B),
+              primary: const Color(0xFF0A7E8C),
+              surface: const Color(0xFFF7F9FC),
+              onSurface: const Color(0xFF111827),
+              secondary: const Color(0xFF6B7280),
             ),
-        textTheme: GoogleFonts.plusJakartaSansTextTheme(ThemeData.light().textTheme).copyWith(
-          displayLarge: GoogleFonts.plusJakartaSans(
-            fontSize: 32,
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF0F172A),
-          ),
+        textTheme: GoogleFonts.plusJakartaSansTextTheme(
+          ThemeData.light().textTheme,
+        ).copyWith(
           headlineLarge: GoogleFonts.plusJakartaSans(
-            fontSize: 30,
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF0F172A),
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF111827),
           ),
           headlineMedium: GoogleFonts.plusJakartaSans(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
-          ),
-          headlineSmall: GoogleFonts.plusJakartaSans(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF111827),
           ),
           titleLarge: GoogleFonts.plusJakartaSans(
             fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
-          ),
-          titleMedium: GoogleFonts.plusJakartaSans(
-            fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF0F172A),
-          ),
-          titleSmall: GoogleFonts.plusJakartaSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF0F172A),
+            color: const Color(0xFF1F2937),
           ),
           bodyLarge: GoogleFonts.plusJakartaSans(
             fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF0F172A),
+            fontWeight: FontWeight.normal,
+            color: const Color(0xFF374151),
           ),
           bodyMedium: GoogleFonts.plusJakartaSans(
-            fontSize: 15,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF0F172A),
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+            color: const Color(0xFF4B5563),
           ),
           bodySmall: GoogleFonts.plusJakartaSans(
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF64748B),
-          ),
-          labelLarge: GoogleFonts.plusJakartaSans(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF0A6EBD),
-          ),
-          labelMedium: GoogleFonts.inter(
             fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF64748B),
-          ),
-          labelSmall: GoogleFonts.plusJakartaSans(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF64748B),
+            fontWeight: FontWeight.normal,
+            color: const Color(0xFF6B7280),
           ),
         ),
         cardTheme: const CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
+            borderRadius: BorderRadius.all(
+              Radius.circular(16),
+            ),
           ),
           color: Colors.white,
+          shadowColor: Color(0x0A1A2B33),
           surfaceTintColor: Colors.transparent,
         ),
         appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: const Color(0xFFF7F9FC),
           elevation: 0,
           centerTitle: false,
-          foregroundColor: const Color(0xFF0F172A),
-          titleTextStyle: GoogleFonts.inter(
+          foregroundColor: const Color(0xFF111827),
+          titleTextStyle: GoogleFonts.plusJakartaSans(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF0F172A),
+            color: const Color(0xFF111827),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -241,29 +219,32 @@ class MainApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF0A6EBD), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF0A7E8C), width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
+            horizontal: DesignTokens.md,
             vertical: 14,
           ),
         ),
         navigationRailTheme: const NavigationRailThemeData(
           backgroundColor: Colors.white,
-          selectedIconTheme: IconThemeData(color: Color(0xFF0A6EBD)),
+          selectedIconTheme: IconThemeData(color: Color(0xFF0A7E8C)),
           unselectedIconTheme: IconThemeData(color: Color(0xFF64748B)),
           selectedLabelTextStyle: TextStyle(
             fontWeight: FontWeight.w600,
-            color: Color(0xFF0A6EBD),
+            color: Color(0xFF0A7E8C),
           ),
           unselectedLabelTextStyle: TextStyle(color: Color(0xFF64748B)),
         ),
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: Colors.white,
           elevation: 0,
-          indicatorColor: const Color(0xFF0A6EBD).withValues(alpha: 0.12),
+          indicatorColor: const Color(0xFF0A7E8C).withValues(alpha: 0.12),
           labelTextStyle: WidgetStateProperty.all(
-            GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500),
+            GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ),

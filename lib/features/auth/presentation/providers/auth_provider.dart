@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import 'package:doctorly/features/auth/data/repositories/auth_repository.dart';
 import 'package:doctorly/services/logger.dart';
+import 'package:doctorly/services/secure_storage_service.dart';
 
 enum AuthStatus {
   unauthenticated,
@@ -295,8 +295,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       await repo.enterGuestMode();
       final userId = repo.currentUser?.id;
       if (userId != null) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cached_anonymous_user_id', userId);
+        await SecureStorageService.instance
+            .setString('cached_anonymous_user_id', userId);
       }
       final updated = state.valueOrNull ?? const AuthState();
       state = AsyncValue.data(
@@ -368,8 +368,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   }
 
   Future<void> _attemptMergeIfNeeded(String newUserId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final cachedAnonId = prefs.getString('cached_anonymous_user_id');
+    final cachedAnonId = await SecureStorageService.instance
+        .getString('cached_anonymous_user_id');
     if (cachedAnonId == null || cachedAnonId == newUserId) {
       return;
     }
@@ -420,8 +420,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   }
 
   Future<void> _clearCachedAnonymousUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('cached_anonymous_user_id');
+    await SecureStorageService.instance.delete('cached_anonymous_user_id');
   }
 }
 

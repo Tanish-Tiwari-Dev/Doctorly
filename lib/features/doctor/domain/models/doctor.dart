@@ -24,6 +24,11 @@ class Doctor {
     this.teleconsultation = false,
     this.languages,
     this.expertise = const {},
+    this.openingTime = '09:00',
+    this.closingTime = '17:00',
+    this.isVerified = false,
+    this.yearsOfExperience = 0,
+    this.about,
   });
 
   final String id;
@@ -47,6 +52,11 @@ class Doctor {
   final bool teleconsultation;
   final String? languages;
   final Map<String, bool> expertise;
+  final String openingTime;
+  final String closingTime;
+  final bool isVerified;
+  final int yearsOfExperience;
+  final String? about;
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
     final double? distanceM = (json['distance_m'] as num?)?.toDouble();
@@ -61,11 +71,15 @@ class Doctor {
     }
 
     return Doctor(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      specialty: json['specialty'] as String,
+      id: (json['id'] as String?) ?? '',
+      name: (json['full_name'] as String?) ?? (json['name'] as String?) ?? '',
+      specialty: (json['primary_specialty'] as String?) ??
+          (json['specialty'] as String?) ??
+          '',
       distanceKm: distanceM != null ? distanceM / 1000.0 : 0.0,
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      rating: (json['average_rating'] as num?)?.toDouble() ??
+          (json['rating'] as num?)?.toDouble() ??
+          0.0,
       imageUrl: (json['image_url'] as String?) ?? '',
       availability: (json['availability'] as String?) ?? '',
       address: json['address'] as String?,
@@ -76,12 +90,17 @@ class Doctor {
       hospitalName: json['hospital_name'] as String?,
       practiceType: json['practice_type'] as String?,
       city: json['city'] as String?,
-      phone: json['phone'] as String?,
+      phone: (json['phone_number'] as String?) ?? (json['phone'] as String?),
       email: json['email'] as String?,
       websiteUrl: json['website_url'] as String?,
       teleconsultation: (json['teleconsultation'] as bool?) ?? false,
       languages: json['languages'] as String?,
       expertise: expertiseMap,
+      openingTime: (json['opening_time'] as String?) ?? '09:00',
+      closingTime: (json['closing_time'] as String?) ?? '17:00',
+      isVerified: (json['is_verified'] as bool?) ?? false,
+      yearsOfExperience: (json['years_of_experience'] as num?)?.toInt() ?? 0,
+      about: json['about'] as String?,
     );
   }
 
@@ -106,6 +125,11 @@ class Doctor {
       'teleconsultation': teleconsultation,
       'languages': languages,
       'expertise': expertise,
+      'opening_time': openingTime,
+      'closing_time': closingTime,
+      'is_verified': isVerified,
+      'years_of_experience': yearsOfExperience,
+      'about': about,
     };
   }
 
@@ -124,6 +148,11 @@ class Doctor {
     bool? teleconsultation,
     String? languages,
     Map<String, bool>? expertise,
+    String? openingTime,
+    String? closingTime,
+    bool? isVerified,
+    int? yearsOfExperience,
+    String? about,
   }) {
     return Doctor(
       id: id,
@@ -147,6 +176,11 @@ class Doctor {
       teleconsultation: teleconsultation ?? this.teleconsultation,
       languages: languages ?? this.languages,
       expertise: expertise ?? this.expertise,
+      openingTime: openingTime ?? this.openingTime,
+      closingTime: closingTime ?? this.closingTime,
+      isVerified: isVerified ?? this.isVerified,
+      yearsOfExperience: yearsOfExperience ?? this.yearsOfExperience,
+      about: about ?? this.about,
     );
   }
 

@@ -4,33 +4,17 @@ import 'package:go_router/go_router.dart';
 
 import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
 import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/widgets/offline_banner.dart';
 
 class BottomNavScaffold extends ConsumerWidget {
   const BottomNavScaffold({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
-  static const _destinations = <NavigationDestination>[
-    NavigationDestination(
-      icon: Icon(Icons.home_outlined, color: AppColors.inactiveIcon),
-      selectedIcon: Icon(Icons.home, color: AppColors.primary),
-      label: 'Home',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.favorite_border, color: AppColors.inactiveIcon),
-      selectedIcon: Icon(Icons.favorite, color: AppColors.primary),
-      label: 'Favorites',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.calendar_today_outlined, color: AppColors.inactiveIcon),
-      selectedIcon: Icon(Icons.calendar_today, color: AppColors.primary),
-      label: 'Appointments',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isMerging = ref.watch(isMergingProvider);
+    final theme = Theme.of(context);
 
     ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {
       final mergeError = next.valueOrNull?.mergeError;
@@ -53,11 +37,30 @@ class BottomNavScaffold extends ConsumerWidget {
       }
     });
 
+    final items = [
+      (
+        label: 'Home',
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home_rounded,
+      ),
+      (
+        label: 'Favorites',
+        icon: Icons.favorite_border_rounded,
+        activeIcon: Icons.favorite_rounded,
+      ),
+      (
+        label: 'Appointments',
+        icon: Icons.calendar_today_outlined,
+        activeIcon: Icons.calendar_month_rounded,
+      ),
+    ];
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth >= 600;
         final mainContent = Column(
           children: [
+            const OfflineBanner(),
             if (isMerging) const _MergeProgressBanner(),
             Expanded(child: navigationShell),
           ],
@@ -65,7 +68,7 @@ class BottomNavScaffold extends ConsumerWidget {
 
         if (isWide) {
           return Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: const Color(0xFFF7F9FC),
             body: Row(
               children: [
                 NavigationRail(
@@ -73,83 +76,124 @@ class BottomNavScaffold extends ConsumerWidget {
                   onDestinationSelected: _onTap,
                   labelType: NavigationRailLabelType.all,
                   backgroundColor: Colors.white,
-                  indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+                  indicatorColor: const Color(0xFFE6F7F8),
                   selectedIconTheme: const IconThemeData(
-                    color: AppColors.primary,
+                    color: Color(0xFF0A7E8C),
                     size: 24,
                   ),
                   unselectedIconTheme: const IconThemeData(
-                    color: AppColors.textSecondary,
+                    color: Color(0xFF9CA3AF),
                     size: 24,
                   ),
-                  selectedLabelTextStyle: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                  unselectedLabelTextStyle: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                  destinations: const [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.home_outlined),
-                      selectedIcon: Icon(Icons.home),
-                      label: Text('Home'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.favorite_border),
-                      selectedIcon: Icon(Icons.favorite),
-                      label: Text('Favorites'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.calendar_today_outlined),
-                      selectedIcon: Icon(Icons.calendar_today),
-                      label: Text('Appointments'),
-                    ),
-                  ],
+                  selectedLabelTextStyle: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0A7E8C),
+                  ),
+                  unselectedLabelTextStyle: theme.textTheme.bodySmall?.copyWith(
+                    color: const Color(0xFF9CA3AF),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  destinations: items
+                      .map(
+                        (item) => NavigationRailDestination(
+                          icon: Icon(item.icon),
+                          selectedIcon: Icon(item.activeIcon),
+                          label: Text(item.label),
+                        ),
+                      )
+                      .toList(),
                 ),
                 const VerticalDivider(
                   thickness: 1,
                   width: 1,
-                  color: AppColors.divider,
+                  color: Color(0xFFE5E7EB),
                 ),
                 Expanded(child: mainContent),
               ],
             ),
           );
         }
+
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: const Color(0xFFF7F9FC),
           body: mainContent,
           bottomNavigationBar: Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            decoration: BoxDecoration(
+            height: 70,
+            decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              border: Border(
+                top: BorderSide(
+                  color: Color(0xFFE5E7EB),
+                  width: 1,
+                ),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.textPrimary.withValues(alpha: 0.06),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
+                  color: Color(0x0A1A2B33),
+                  blurRadius: 16,
+                  offset: Offset(0, -4),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: NavigationBar(
-                selectedIndex: navigationShell.currentIndex,
-                onDestinationSelected: _onTap,
-                backgroundColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                elevation: 0,
-                height: 64,
-                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                destinations: _destinations,
+            child: SafeArea(
+              top: false,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(items.length, (index) {
+                  final isSelected = index == navigationShell.currentIndex;
+                  final item = items[index];
+
+                  return Expanded(
+                    child: InkWell(
+                      onTap: () => _onTap(index),
+                      splashColor: const Color(0xFFE6F7F8),
+                      highlightColor: Colors.transparent,
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          minHeight: 44,
+                          minWidth: 44,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFFE6F7F8)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                              child: Icon(
+                                isSelected ? item.activeIcon : item.icon,
+                                size: 24,
+                                color: isSelected
+                                    ? const Color(0xFF0A7E8C)
+                                    : const Color(0xFF9CA3AF),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              item.label,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: isSelected
+                                    ? const Color(0xFF0A7E8C)
+                                    : const Color(0xFF9CA3AF),
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
               ),
             ),
           ),
@@ -191,9 +235,9 @@ class _MergeProgressBanner extends StatelessWidget {
               child: Text(
                 'Finalizing your account...',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ),
           ],
