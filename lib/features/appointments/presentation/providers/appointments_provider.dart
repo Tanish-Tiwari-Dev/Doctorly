@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:doctorly/features/appointments/data/repositories/appointments_repository.dart';
 import 'package:doctorly/features/appointments/domain/models/appointment.dart';
 import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
-import 'package:doctorly/features/appointments/data/repositories/appointments_repository.dart';
+import 'package:doctorly/providers/notification_provider.dart';
 import 'package:doctorly/utils/error_localizer.dart';
 import 'package:doctorly/utils/repository_exception.dart';
 
@@ -26,8 +27,16 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
       throw StateError('Not signed in');
     }
     final repo = ref.read(appointmentsRepositoryProvider);
+    final notificationService = ref.read(notificationServiceProvider);
     try {
-      await repo.create(userId, doctorId, scheduledFor);
+      final appointment = await repo.create(userId, doctorId, scheduledFor);
+      final notificationId = appointment.id.hashCode & 0x7FFFFFFF;
+      await notificationService.scheduleAppointmentReminder(
+        id: notificationId,
+        title: 'Upcoming Appointment Reminder',
+        body: 'You have an appointment scheduled in 1 hour.',
+        scheduledTime: appointment.scheduledFor,
+      );
       ref.invalidateSelf();
     } on RepositoryException catch (e) {
       state = AsyncValue.error(localizeError(e), StackTrace.current);
@@ -45,8 +54,11 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
       return;
     }
     final repo = ref.read(appointmentsRepositoryProvider);
+    final notificationService = ref.read(notificationServiceProvider);
     try {
       await repo.cancel(appointmentId);
+      final notificationId = appointmentId.hashCode & 0x7FFFFFFF;
+      await notificationService.cancelReminder(notificationId);
       ref.invalidateSelf();
     } on RepositoryException catch (e) {
       state = AsyncValue.error(localizeError(e), StackTrace.current);

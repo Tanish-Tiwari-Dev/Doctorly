@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:doctorly/features/doctor/domain/models/doctor.dart';
 import 'package:doctorly/features/doctor/domain/models/specialty.dart';
 import 'package:doctorly/features/doctor/data/repositories/doctors_repository.dart';
+import 'package:doctorly/features/doctor/presentation/providers/doctor_filter_provider.dart';
+import 'package:doctorly/utils/availability_checker.dart';
 import 'package:doctorly/utils/error_localizer.dart';
 import 'package:doctorly/utils/repository_exception.dart';
 
@@ -43,11 +45,9 @@ final doctorByIdProvider = Provider.family<Doctor?, String>((ref, id) {
   return index == -1 ? null : doctors[index];
 });
 
-final topRatedDoctorsProvider = Provider<AsyncValue<List<Doctor>>>((ref) {
-  return ref.watch(doctorListProvider).whenData((doctors) {
-    final sorted = [...doctors]..sort((a, b) => b.rating.compareTo(a.rating));
-    return sorted.take(6).toList();
-  });
+final topRatedDoctorsProvider = FutureProvider<List<Doctor>>((ref) async {
+  final repo = ref.read(doctorRepositoryProvider);
+  return await repo.fetchTopRated(minRating: 4.5, limit: 10);
 });
 
 final selectedSpecialtyProvider = StateProvider<Specialty?>((ref) => null);
@@ -78,33 +78,57 @@ final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
 );
 
 final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
+  final filter = ref.watch(doctorFilterProvider);
   final nearby = ref.watch(nearbyResultsProvider);
-  if (nearby != null) {
-    final query = ref.watch(searchQueryProvider).trim().toLowerCase();
-    final specialty = ref.watch(selectedSpecialtyProvider);
-    return nearby.where((d) {
-      final matchQuery =
-          query.isEmpty ||
-          d.name.toLowerCase().contains(query) ||
-          d.specialty.toLowerCase().contains(query);
-      final matchSpecialty =
-          specialty == null || d.specialty == specialty.label;
-      return matchQuery && matchSpecialty;
-    }).toList();
+  final query = ref.watch(searchQueryProvider).trim().toLowerCase();
+  final specialtyChip = ref.watch(selectedSpecialtyProvider);
+
+  final sourceList =
+      nearby ?? ref.watch(doctorListProvider).valueOrNull ?? const [];
+
+  final sorted = List<Doctor>.of(sourceList);
+  if (nearby == null) {
+    sorted.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
   }
 
-  final doctors = ref.watch(doctorListProvider).valueOrNull ?? const [];
-  final sorted = List<Doctor>.of(doctors);
-  sorted.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
-  final query = ref.watch(searchQueryProvider).trim().toLowerCase();
-  final specialty = ref.watch(selectedSpecialtyProvider);
   return sorted.where((doctor) {
-    final matchQuery =
-        query.isEmpty ||
+    final matchQuery = query.isEmpty ||
         doctor.name.toLowerCase().contains(query) ||
         doctor.specialty.toLowerCase().contains(query);
-    final matchSpecialty =
-        specialty == null || doctor.specialty == specialty.label;
-    return matchQuery && matchSpecialty;
+
+    final matchSpecialtyChip =
+        specialtyChip == null || doctor.specialty == specialtyChip.label;
+
+    final matchFilterRating = doctor.rating >= filter.minRating;
+
+    final matchFilterSpecialty = filter.specialty == null ||
+        filter.specialty!.isEmpty ||
+        doctor.specialty == filter.specialty;
+
+    final matchFilterDistance = filter.maxDistanceKm >= 50 ||
+        (doctor.distanceKm > 0 && doctor.distanceKm <= filter.maxDistanceKm) ||
+        doctor.distanceKm == 0;
+
+    final matchOpenNow = !filter.openNowOnly ||
+        isDoctorOpen(doctor.openingTime, doctor.closingTime);
+
+    return matchQuery &&
+        matchSpecialtyChip &&
+        matchFilterRating &&
+        matchFilterSpecialty &&
+        matchFilterDistance &&
+        matchOpenNow;
   }).toList();
 });
+
+/// Record parameter type for similar doctors query.
+typedef SimilarDoctorsParams = ({String doctorId, String specialty});
+
+/// Provider fetching similar doctors for a given doctor ID and specialty.
+final similarDoctorsProvider =
+    FutureProvider.family<List<Doctor>, SimilarDoctorsParams>(
+  (ref, params) async {
+    final repo = ref.watch(doctorRepositoryProvider);
+    return repo.fetchSimilarDoctors(params.doctorId, params.specialty);
+  },
+);
