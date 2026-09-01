@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:doctorly/features/doctor/domain/models/doctor.dart';
+import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 
 /// A compact card for the "Top Rated" horizontal carousel on the Home Screen.
 ///
@@ -22,6 +23,8 @@ class TopRatedDoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     // --- Derived display strings (safe fallbacks) ---
     final String ratingStr =
         doctor.rating > 0 ? doctor.rating.toStringAsFixed(1) : '4.3';
@@ -34,11 +37,6 @@ class TopRatedDoctorCard extends StatelessWidget {
         ? '${doctor.distanceKm.toStringAsFixed(1)} KM'
         : '2.5 KM';
 
-    final String addressStr =
-        (doctor.address != null && doctor.address!.isNotEmpty)
-            ? doctor.address!
-            : '123 Colony, Yerwada';
-
     final String hoursStr =
         (doctor.openingTime.isNotEmpty && doctor.closingTime.isNotEmpty)
             ? '${doctor.openingTime} - ${doctor.closingTime}'
@@ -48,17 +46,11 @@ class TopRatedDoctorCard extends StatelessWidget {
       onTap: () => context.push('/doctor/${doctor.id}'),
       child: Container(
         width: 280,
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(DesignTokens.sm + DesignTokens.xs),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.0),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
+          color: DesignTokens.cardBackground,
+          borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+          boxShadow: const [DesignTokens.cardShadow],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +67,7 @@ class TopRatedDoctorCard extends StatelessWidget {
                     width: 60.0,
                     height: 60.0,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFE6F7F8),
+                      color: DesignTokens.primaryLight,
                       shape: BoxShape.circle,
                     ),
                     child: ClipOval(
@@ -90,7 +82,7 @@ class TopRatedDoctorCard extends StatelessWidget {
                                 child: Icon(
                                   Icons.person_rounded,
                                   size: 31.0,
-                                  color: Color(0xFF0A7E8C),
+                                  color: DesignTokens.primary,
                                 ),
                               ),
                             )
@@ -98,13 +90,13 @@ class TopRatedDoctorCard extends StatelessWidget {
                               child: Icon(
                                 Icons.person_rounded,
                                 size: 31.0,
-                                color: Color(0xFF0A7E8C),
+                                color: DesignTokens.primary,
                               ),
                             ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12.0),
+                const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
 
                 // Name + Specialty + Rating badge
                 Expanded(
@@ -118,42 +110,41 @@ class TopRatedDoctorCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               doctor.name,
-                              style: GoogleFonts.inter(
-                                fontSize: 15.0,
+                              style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1F2937),
+                                color: DesignTokens.textPrimary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 8.0),
+                          const SizedBox(width: DesignTokens.sm),
                           // Rating badge
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                              vertical: 3.0,
+                              horizontal: DesignTokens.sm,
+                              vertical: DesignTokens.xs / 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFECFDF5),
-                              borderRadius: BorderRadius.circular(12.0),
+                              color: DesignTokens.successBackground,
+                              borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   ratingStr,
-                                  style: GoogleFonts.inter(
+                                  style: theme.textTheme.bodySmall?.copyWith(
                                     fontSize: 11.0,
                                     fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF047857),
+                                    color: DesignTokens.success,
                                   ),
                                 ),
                                 const SizedBox(width: 2.0),
                                 const Icon(
                                   Icons.star_rounded,
                                   size: 14.0,
-                                  color: Color(0xFFF59E0B),
+                                  color: DesignTokens.starRating,
                                 ),
                               ],
                             ),
@@ -168,43 +159,29 @@ class TopRatedDoctorCard extends StatelessWidget {
                           const Icon(
                             Icons.work_outline,
                             size: 13.0,
-                            color: Color(0xFF6B7280),
+                            color: DesignTokens.textSecondary,
                           ),
-                          const SizedBox(width: 3.0),
+                          const SizedBox(width: 2.0),
                           Text(
                             experienceStr,
-                            style: GoogleFonts.inter(
+                            style: theme.textTheme.bodySmall?.copyWith(
                               fontSize: 10.0,
-                              color: const Color(0xFF4B5563),
+                              color: DesignTokens.textSecondary,
                             ),
                           ),
-                          const SizedBox(width: 8.0),
+                          const SizedBox(width: 6.0),
                           const Icon(
                             Icons.location_on_outlined,
                             size: 13.0,
-                            color: Color(0xFF6B7280),
+                            color: DesignTokens.textSecondary,
                           ),
-                          const SizedBox(width: 3.0),
-                          Text(
-                            distanceStr,
-                            style: GoogleFonts.inter(
-                              fontSize: 10.0,
-                              color: const Color(0xFF4B5563),
-                            ),
-                          ),
-                          const SizedBox(width: 8.0),
-                          const Icon(
-                            Icons.location_city_outlined,
-                            size: 13.0,
-                            color: Color(0xFF6B7280),
-                          ),
-                          const SizedBox(width: 3.0),
-                          Expanded(
+                          const SizedBox(width: 2.0),
+                          Flexible(
                             child: Text(
-                              addressStr,
-                              style: GoogleFonts.inter(
+                              distanceStr,
+                              style: theme.textTheme.bodySmall?.copyWith(
                                 fontSize: 10.0,
-                                color: const Color(0xFF4B5563),
+                                color: DesignTokens.textSecondary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -225,46 +202,55 @@ class TopRatedDoctorCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Operating hours
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.access_time_rounded,
-                      size: 14.0,
-                      color: Color(0xFF6B7280),
-                    ),
-                    const SizedBox(width: 4.0),
-                    Text(
-                      hoursStr,
-                      style: GoogleFonts.inter(
-                        fontSize: 10.0,
-                        color: const Color(0xFF4B5563),
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.access_time_rounded,
+                        size: 14.0,
+                        color: DesignTokens.textSecondary,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: DesignTokens.xs),
+                      Flexible(
+                        child: Text(
+                          hoursStr,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 10.0,
+                            color: DesignTokens.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+
+                const SizedBox(width: DesignTokens.sm),
 
                 // Book Seat button
                 ElevatedButton(
                   onPressed: () => context.push('/doctor/${doctor.id}'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF4444),
+                    backgroundColor: AppColors.error,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14.0,
-                      vertical: 4.0,
+                      horizontal: DesignTokens.sm + DesignTokens.xs,
+                      vertical: DesignTokens.xs,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                      borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                     ),
                     elevation: 0,
                     minimumSize: const Size(0, 28.0),
                   ),
                   child: Text(
                     'Book Seat',
-                    style: GoogleFonts.inter(
+                    style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 11.0,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 
 /// A small, elegant badge displaying a verified checkmark icon and text.
 class VerifiedBadge extends StatelessWidget {
@@ -14,12 +15,12 @@ class VerifiedBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: compact ? 6 : 8,
-        vertical: compact ? 2 : 4,
+        horizontal: compact ? (DesignTokens.sm - DesignTokens.xs / 2) : DesignTokens.sm,
+        vertical: compact ? (DesignTokens.xs / 2) : DesignTokens.xs,
       ),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
         border: Border.all(
           color: AppColors.primary.withValues(alpha: 0.3),
           width: 1,
@@ -33,7 +34,7 @@ class VerifiedBadge extends StatelessWidget {
             color: AppColors.primary,
             size: compact ? 12 : 14,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: DesignTokens.xs),
           Text(
             'Verified',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(

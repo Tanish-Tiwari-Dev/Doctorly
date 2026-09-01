@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:doctorly/features/doctor/data/repositories/reports_repository.dart';
 import 'package:doctorly/services/logger.dart';
 import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/utils/error_localizer.dart';
 
 /// Modal bottom sheet widget for reporting doctor content or profiles.
@@ -26,9 +27,11 @@ class ReportDoctorSheet extends ConsumerStatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: DesignTokens.cardBackground,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(DesignTokens.radiusLarge),
+        ),
       ),
       builder: (context) => ReportDoctorSheet(
         doctorId: doctorId,
@@ -81,7 +84,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.textPrimary,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
             content: Text(
               'Thank you. Your report has been submitted for review.',
@@ -101,7 +104,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.error,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
             content: Text(
               localizeError(e),
@@ -120,7 +123,12 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 20, 24, 20 + bottomInset),
+      padding: EdgeInsets.fromLTRB(
+        DesignTokens.lg,
+        DesignTokens.md + DesignTokens.xs,
+        DesignTokens.lg,
+        DesignTokens.md + DesignTokens.xs + bottomInset,
+      ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -132,11 +140,11 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 4),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
             Row(
               children: [
                 const Icon(
@@ -144,7 +152,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                   color: AppColors.error,
                   size: 24,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
                 Expanded(
                   child: Text(
                     'Report ${widget.doctorName}',
@@ -156,7 +164,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: DesignTokens.sm),
             Text(
               'Please select a reason for reporting this profile. Your report will be reviewed by our moderation team.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -164,7 +172,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                     height: 1.4,
                   ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
             ..._predefinedReasons.map((reason) {
               final isSelected = reason == _selectedReason;
               return InkWell(
@@ -173,11 +181,11 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                     : () {
                         setState(() => _selectedReason = reason);
                       },
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 10,
+                    horizontal: DesignTokens.xs,
+                    vertical: DesignTokens.sm + DesignTokens.xs,
                   ),
                   child: Row(
                     children: [
@@ -190,7 +198,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                             : AppColors.inactiveIcon,
                         size: 22,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
                       Text(
                         reason,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -205,7 +213,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                 ),
               );
             }),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
             Text(
               'Additional Details (Optional)',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -213,7 +221,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                     color: AppColors.textPrimary,
                   ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: DesignTokens.sm),
             TextField(
               controller: _detailsController,
               enabled: !_isSubmitting,
@@ -230,11 +238,11 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                 filled: true,
                 fillColor: AppColors.background,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   borderSide: const BorderSide(
                     color: AppColors.primary,
                     width: 1.5,
@@ -242,7 +250,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
             SizedBox(
               height: 52,
               child: ElevatedButton(
@@ -255,7 +263,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                   ),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   ),
                   textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontSize: 16,

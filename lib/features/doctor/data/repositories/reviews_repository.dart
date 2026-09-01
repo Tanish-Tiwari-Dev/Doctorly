@@ -12,19 +12,24 @@ class ReviewsRepository {
 
   final SupabaseClient _client;
 
-  /// Fetches all reviews for the specified [doctorId].
-  Future<List<DoctorReview>> fetchReviews(String doctorId) async {
+  /// Fetches reviews for the specified [doctorId] up to [limit].
+  Future<List<DoctorReview>> fetchReviews(
+    String doctorId, {
+    int limit = 50,
+  }) async {
     try {
       final response = await _client
           .from('doctor_reviews')
           .select()
           .eq('doctor_id', doctorId)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .limit(limit);
 
       return (response as List<dynamic>)
           .map((json) => DoctorReview.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
@@ -57,6 +62,7 @@ class ReviewsRepository {
 
       return DoctorReview.fromJson(response);
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
@@ -69,7 +75,8 @@ final reviewsRepositoryProvider = Provider<ReviewsRepository>((ref) {
 
 /// Provider for fetching reviews for a specific doctor ID.
 final doctorReviewsProvider =
-    FutureProvider.family<List<DoctorReview>, String>((ref, doctorId) async {
+    FutureProvider.autoDispose.family<List<DoctorReview>, String>(
+        (ref, doctorId) async {
   final repository = ref.watch(reviewsRepositoryProvider);
   return repository.fetchReviews(doctorId);
 });

@@ -1,6 +1,8 @@
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+/// Abstract interface for crash and error reporting.
 abstract class ErrorReporter {
+  /// Reports an exception or error [error] with optional [stack] trace and metadata [context].
   Future<void> report(
     Object error,
     StackTrace stack, {
@@ -8,7 +10,9 @@ abstract class ErrorReporter {
   });
 }
 
+/// Sentry implementation of [ErrorReporter].
 class SentryErrorReporter implements ErrorReporter {
+  /// Creates a [SentryErrorReporter].
   const SentryErrorReporter();
 
   @override

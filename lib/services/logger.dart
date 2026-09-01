@@ -1,14 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
+/// Singleton logging service built on package:logging.
 class LoggerService {
   LoggerService._();
 
+  /// The global singleton instance of [LoggerService].
   static final LoggerService instance = LoggerService._();
   Logger? _log;
 
+  /// Gets the application's root logger.
   Logger get log => _log ??= Logger('Doctorly');
 
+  /// Initializes root logging level based on release/debug mode.
   Future<void> initialize() async {
     if (_log != null) return;
 

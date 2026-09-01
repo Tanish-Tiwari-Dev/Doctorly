@@ -1,5 +1,9 @@
 import 'package:doctorly/utils/repository_exception.dart';
 
+/// Translates a repository or general error object into a localized, user-friendly message string.
+///
+/// Handles [RepositoryException] by mapping its [RepositoryExceptionKind] to a friendly message.
+/// Returns a fallback message for unrecognized error types.
 String localizeError(Object error) {
   if (error is RepositoryException) {
     switch (error.kind) {

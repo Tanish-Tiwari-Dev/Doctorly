@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:doctorly/providers/location_provider.dart';
+import 'package:doctorly/features/doctor/presentation/providers/location_provider.dart';
 import 'package:doctorly/services/location_service.dart';
 
 void main() {

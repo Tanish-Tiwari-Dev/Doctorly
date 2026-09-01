@@ -4,9 +4,10 @@ import 'package:intl/intl.dart';
 
 import 'package:doctorly/features/appointments/domain/models/appointment.dart';
 import 'package:doctorly/features/appointments/presentation/providers/appointments_provider.dart';
-import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
 import 'package:doctorly/features/appointments/presentation/widgets/appointment_card_skeleton.dart';
+import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
 import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/widgets/empty_state.dart';
 
 class AppointmentsScreen extends ConsumerWidget {
@@ -26,7 +27,7 @@ class AppointmentsScreen extends ConsumerWidget {
       ),
       body: appointments.when(
         loading: () => ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: DesignTokens.sm),
           itemCount: 4,
           itemBuilder: (context, index) => const AppointmentCardSkeleton(),
         ),
@@ -44,11 +45,11 @@ class AppointmentsScreen extends ConsumerWidget {
               subtitle: "Book your first appointment from a doctor's profile.",
             );
           }
-          final df = DateFormat('EEE, MMM d \u2022 h:mm a');
+          final df = DateFormat('EEE, MMM d • h:mm a');
           return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: DesignTokens.sm),
             itemCount: items.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 4),
+            separatorBuilder: (_, _) => const SizedBox(height: DesignTokens.xs),
             itemBuilder: (context, index) {
               final appt = items[index];
               final doctor = ref.watch(doctorByIdProvider(appt.doctorId));
@@ -108,9 +109,12 @@ class _AppointmentCardState extends ConsumerState<_AppointmentCard> {
     final isPending = widget.appointment.status == AppointmentStatus.pending;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.symmetric(
+        horizontal: DesignTokens.md,
+        vertical: DesignTokens.xs,
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(DesignTokens.sm),
         child: Column(
           children: [
             ListTile(
@@ -124,7 +128,7 @@ class _AppointmentCardState extends ConsumerState<_AppointmentCard> {
                     ?.copyWith(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                '${widget.specialty} \u2022 ${widget.formattedDate}',
+                '${widget.specialty} • ${widget.formattedDate}',
               ),
               trailing: _StatusChip(status: widget.appointment.status),
             ),
@@ -132,7 +136,10 @@ class _AppointmentCardState extends ConsumerState<_AppointmentCard> {
               Align(
                 alignment: Alignment.centerRight,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 8, bottom: 4),
+                  padding: const EdgeInsets.only(
+                    right: DesignTokens.sm,
+                    bottom: DesignTokens.xs,
+                  ),
                   child: TextButton(
                     onPressed: _isCancelling ? null : _handleCancel,
                     style: TextButton.styleFrom(

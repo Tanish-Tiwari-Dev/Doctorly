@@ -5,6 +5,7 @@ import 'package:doctorly/features/doctor/data/repositories/reviews_repository.da
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
 import 'package:doctorly/services/logger.dart';
 import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/utils/error_localizer.dart';
 
 /// Modal bottom sheet widget allowing users to rate a doctor and submit text feedback.
@@ -31,9 +32,11 @@ class LeaveReviewSheet extends ConsumerStatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: DesignTokens.cardBackground,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(DesignTokens.radiusLarge),
+        ),
       ),
       builder: (context) => LeaveReviewSheet(
         doctorId: doctorId,
@@ -83,7 +86,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.textPrimary,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
             content: Text(
               'Thank you! Your review has been published.',
@@ -103,7 +106,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.error,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
             content: Text(
               localizeError(e),
@@ -122,7 +125,12 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 20, 24, 20 + bottomInset),
+      padding: EdgeInsets.fromLTRB(
+        DesignTokens.lg,
+        DesignTokens.md + DesignTokens.xs,
+        DesignTokens.lg,
+        DesignTokens.md + DesignTokens.xs + bottomInset,
+      ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -134,11 +142,11 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 4),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
             Row(
               children: [
                 const Icon(
@@ -146,7 +154,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                   color: AppColors.primary,
                   size: 24,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
                 Expanded(
                   child: Text(
                     'Review ${widget.doctorName}',
@@ -158,7 +166,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: DesignTokens.sm),
             Text(
               'Share your experience to help other patients find the best care.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -166,7 +174,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                     height: 1.4,
                   ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: DesignTokens.md + DesignTokens.xs),
             Center(
               child: Text(
                 'Tap to Rate',
@@ -176,7 +184,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                     ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: DesignTokens.sm + DesignTokens.xs),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(5, (index) {
@@ -194,7 +202,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                 );
               }),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: DesignTokens.md + DesignTokens.xs),
             Text(
               'Your Comment (Optional)',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -202,7 +210,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                     color: AppColors.textPrimary,
                   ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: DesignTokens.sm),
             TextField(
               controller: _commentController,
               enabled: !_isSubmitting,
@@ -219,11 +227,11 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                 filled: true,
                 fillColor: AppColors.background,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   borderSide: const BorderSide(
                     color: AppColors.primary,
                     width: 1.5,
@@ -231,7 +239,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
             SizedBox(
               height: 52,
               child: ElevatedButton(
@@ -244,7 +252,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                   ),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   ),
                   textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontSize: 16,

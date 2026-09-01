@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
-import 'package:doctorly/features/favorites/presentation/providers/favorites_provider.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/doctor_card.dart';
+import 'package:doctorly/features/favorites/presentation/providers/favorites_provider.dart';
 import 'package:doctorly/features/favorites/presentation/widgets/favorite_card_skeleton.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/widgets/empty_state.dart';
 
 class FavoritesScreen extends ConsumerWidget {
@@ -25,7 +26,7 @@ class FavoritesScreen extends ConsumerWidget {
       ),
       body: favorites.when(
         loading: () => ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: DesignTokens.sm),
           itemCount: 4,
           itemBuilder: (context, index) => const FavoriteCardSkeleton(),
         ),
@@ -37,8 +38,8 @@ class FavoritesScreen extends ConsumerWidget {
         ),
         data: (ids) {
           final doctors = allDoctors.valueOrNull ?? const [];
-          final favorites = doctors.where((d) => ids.contains(d.id)).toList();
-          if (favorites.isEmpty) {
+          final favoriteDoctors = doctors.where((d) => ids.contains(d.id)).toList();
+          if (favoriteDoctors.isEmpty) {
             return const EmptyState(
               icon: Icons.favorite_border,
               title: 'No favorites yet.',
@@ -46,10 +47,10 @@ class FavoritesScreen extends ConsumerWidget {
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: favorites.length,
+            padding: const EdgeInsets.symmetric(vertical: DesignTokens.sm),
+            itemCount: favoriteDoctors.length,
             itemBuilder: (context, index) {
-              return DoctorCard(doctor: favorites[index]);
+              return DoctorCard(doctor: favoriteDoctors[index]);
             },
           );
         },

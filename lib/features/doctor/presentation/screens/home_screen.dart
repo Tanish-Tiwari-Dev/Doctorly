@@ -5,12 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:doctorly/features/doctor/data/repositories/doctors_repository.dart';
 import 'package:doctorly/features/doctor/domain/models/specialty.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_filter_provider.dart';
+
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
+import 'package:doctorly/features/doctor/presentation/providers/location_provider.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/doctor_card.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/doctor_card_skeleton.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/doctor_filter_sheet.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/top_rated_doctor_card.dart';
-import 'package:doctorly/providers/location_provider.dart';
 import 'package:doctorly/services/location_service.dart';
 import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
@@ -71,7 +72,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           behavior: SnackBarBehavior.floating,
           backgroundColor: AppColors.textPrimary,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
           ),
           content: Text(
             list.isEmpty
@@ -96,7 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           behavior: SnackBarBehavior.floating,
           backgroundColor: AppColors.error,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
           ),
           content: Text(
             errorMessage,
@@ -119,7 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: asyncDoctors.when(
           loading: () => CustomScrollView(
@@ -134,7 +135,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(DesignTokens.xl),
                   child: EmptyState(
                     icon: Icons.cloud_off,
                     title: 'Error',
@@ -157,7 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   snap: true,
                   pinned: false,
                   elevation: 0,
-                  backgroundColor: const Color(0xFFF7F9FC),
+                  backgroundColor: AppColors.background,
                   automaticallyImplyLeading: false,
                   toolbarHeight: 56,
                   titleSpacing: DesignTokens.md,
@@ -174,7 +175,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color(0xFF0A7E8C),
+                                  AppColors.primary,
                                 ),
                               ),
                             )
@@ -183,8 +184,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   ? Icons.near_me
                                   : Icons.near_me_outlined,
                               color: _nearbyActive
-                                  ? const Color(0xFF0A7E8C)
-                                  : const Color(0xFF6B7280),
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
                             ),
                       tooltip: _nearbyActive ? 'Show All Doctors' : 'Near Me',
                       onPressed: _isFetchingLocation ? null : _handleNearMe,
@@ -192,7 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     IconButton(
                       icon: const Icon(
                         Icons.settings_outlined,
-                        color: Color(0xFF0A7E8C),
+                        color: AppColors.primary,
                       ),
                       tooltip: 'Settings',
                       onPressed: () => context.push('/settings'),
@@ -212,29 +213,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F3F6),
-                              borderRadius: BorderRadius.circular(30.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
+                              color: DesignTokens.inputBackground,
+                              borderRadius: BorderRadius.circular(DesignTokens.radiusLarge),
+                              boxShadow: const [DesignTokens.subtleShadow],
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 14,
+                                horizontal: DesignTokens.md,
+                                vertical: DesignTokens.sm + DesignTokens.xs,
                               ),
                               child: Row(
                                 children: [
                                   const Icon(
                                     Icons.search_rounded,
                                     size: 22,
-                                    color: Color(0xFF9CA3AF),
+                                    color: AppColors.textHint,
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: DesignTokens.sm),
                                   Expanded(
                                     child: TextField(
                                       controller: _searchController,
@@ -249,7 +244,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         hintText: 'Search doctors, specialties…',
                                         hintStyle: theme.textTheme.bodyMedium
                                             ?.copyWith(
-                                          color: const Color(0xFF9CA3AF),
+                                          color: AppColors.textHint,
                                         ),
                                         border: InputBorder.none,
                                         enabledBorder: InputBorder.none,
@@ -269,20 +264,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       child: const Icon(
                                         Icons.clear_rounded,
                                         size: 18,
-                                        color: Color(0xFF9CA3AF),
+                                        color: AppColors.textHint,
                                       ),
                                     ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: DesignTokens.xs),
                                   GestureDetector(
                                     onTap: () => DoctorFilterSheet.show(context),
                                     child: Badge(
                                       isLabelVisible: !activeFilter.isDefault,
-                                      backgroundColor: const Color(0xFF0A7E8C),
+                                      backgroundColor: AppColors.primary,
                                       smallSize: 8,
                                       child: const Icon(
                                         Icons.tune_rounded,
                                         size: 22,
-                                        color: Color(0xFF0A7E8C),
+                                        color: AppColors.primary,
                                       ),
                                     ),
                                   ),
@@ -291,7 +286,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: DesignTokens.xs),
 
                         // Specialty Quick Chips: Horizontal ListView with 12px spacing
                         SizedBox(
@@ -303,7 +298,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             itemCount: Specialty.values.length,
                             separatorBuilder: (context, index) =>
-                                const SizedBox(width: 12),
+                                const SizedBox(width: DesignTokens.sm),
                             itemBuilder: (context, index) {
                               final specialty = Specialty.values[index];
                               final isSelected = selectedSpecialty == specialty;
@@ -316,14 +311,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 10,
+                                    horizontal: DesignTokens.md,
+                                    vertical: DesignTokens.sm,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? const Color(0xFF0A7E8C)
-                                        : const Color(0xFFF1F3F6),
-                                    borderRadius: BorderRadius.circular(20.0),
+                                        ? AppColors.primary
+                                        : DesignTokens.inputBackground,
+                                    borderRadius: BorderRadius.circular(DesignTokens.radiusLarge),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -333,9 +328,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         size: 16,
                                         color: isSelected
                                             ? Colors.white
-                                            : const Color(0xFF4B5563),
+                                            : AppColors.textSecondary,
                                       ),
-                                      const SizedBox(width: 6),
+                                      const SizedBox(width: DesignTokens.xs),
                                       Text(
                                         specialty.label,
                                         style:
@@ -345,7 +340,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                               : FontWeight.w500,
                                           color: isSelected
                                               ? Colors.white
-                                              : const Color(0xFF4B5563),
+                                              : AppColors.textSecondary,
                                         ),
                                       ),
                                     ],
@@ -386,7 +381,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: Text(
                               'See All',
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: const Color(0xFF0A7E8C),
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -408,17 +403,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           itemCount: 3,
                           separatorBuilder: (_, _) =>
-                              const SizedBox(width: 12),
-                          itemBuilder: (_, _) => Container(
-                            width: 180,
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius:
-                                  BorderRadius.circular(DesignTokens.large),
-                              boxShadow: const [DesignTokens.cardShadow],
-                            ),
-                          ),
+                              const SizedBox(width: DesignTokens.sm),
+                          itemBuilder: (_, _) =>
+                              const DoctorCardSkeleton(compact: true),
                         ),
                         error: (_, _) => const SizedBox.shrink(),
                         data: (doctors) => ListView.separated(
@@ -428,7 +415,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           itemCount: doctors.length,
                           separatorBuilder: (_, _) =>
-                              const SizedBox(width: 12),
+                              const SizedBox(width: DesignTokens.sm),
                           itemBuilder: (context, index) =>
                               TopRatedDoctorCard(doctor: doctors[index]),
                         ),
@@ -470,7 +457,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Text(
                             '${filtered.length} found',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF6B7280),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -483,7 +470,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 if (filtered.isEmpty)
                   const SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.all(32),
+                      padding: EdgeInsets.all(DesignTokens.xl),
                       child: EmptyState(
                         icon: Icons.search_off,
                         title: 'No doctors found',

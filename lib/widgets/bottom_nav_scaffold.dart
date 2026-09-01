@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
 import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/widgets/offline_banner.dart';
 
 class BottomNavScaffold extends ConsumerWidget {
@@ -68,7 +69,7 @@ class BottomNavScaffold extends ConsumerWidget {
 
         if (isWide) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF7F9FC),
+            backgroundColor: DesignTokens.scaffoldBackground,
             body: Row(
               children: [
                 NavigationRail(
@@ -76,21 +77,21 @@ class BottomNavScaffold extends ConsumerWidget {
                   onDestinationSelected: _onTap,
                   labelType: NavigationRailLabelType.all,
                   backgroundColor: Colors.white,
-                  indicatorColor: const Color(0xFFE6F7F8),
+                  indicatorColor: DesignTokens.primaryLight,
                   selectedIconTheme: const IconThemeData(
-                    color: Color(0xFF0A7E8C),
+                    color: DesignTokens.primary,
                     size: 24,
                   ),
                   unselectedIconTheme: const IconThemeData(
-                    color: Color(0xFF9CA3AF),
+                    color: DesignTokens.textSecondary,
                     size: 24,
                   ),
                   selectedLabelTextStyle: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0A7E8C),
+                    color: DesignTokens.primary,
                   ),
                   unselectedLabelTextStyle: theme.textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF9CA3AF),
+                    color: DesignTokens.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                   destinations: items
@@ -106,7 +107,7 @@ class BottomNavScaffold extends ConsumerWidget {
                 const VerticalDivider(
                   thickness: 1,
                   width: 1,
-                  color: Color(0xFFE5E7EB),
+                  color: DesignTokens.divider,
                 ),
                 Expanded(child: mainContent),
               ],
@@ -115,23 +116,23 @@ class BottomNavScaffold extends ConsumerWidget {
         }
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF7F9FC),
+          backgroundColor: DesignTokens.scaffoldBackground,
           body: mainContent,
           bottomNavigationBar: Container(
             height: 70,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(
+              border: const Border(
                 top: BorderSide(
-                  color: Color(0xFFE5E7EB),
+                  color: DesignTokens.divider,
                   width: 1,
                 ),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Color(0x0A1A2B33),
-                  blurRadius: 16,
-                  offset: Offset(0, -4),
+                  color: AppColors.textPrimary.withValues(alpha: 0.06),
+                  blurRadius: 15,
+                  offset: const Offset(0, -4),
                 ),
               ],
             ),
@@ -146,7 +147,7 @@ class BottomNavScaffold extends ConsumerWidget {
                   return Expanded(
                     child: InkWell(
                       onTap: () => _onTap(index),
-                      splashColor: const Color(0xFFE6F7F8),
+                      splashColor: DesignTokens.primaryLight,
                       highlightColor: Colors.transparent,
                       child: Container(
                         constraints: const BoxConstraints(
@@ -163,7 +164,7 @@ class BottomNavScaffold extends ConsumerWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFFE6F7F8)
+                                    ? DesignTokens.primaryLight
                                     : Colors.transparent,
                                 borderRadius: BorderRadius.circular(16.0),
                               ),
@@ -171,8 +172,8 @@ class BottomNavScaffold extends ConsumerWidget {
                                 isSelected ? item.activeIcon : item.icon,
                                 size: 24,
                                 color: isSelected
-                                    ? const Color(0xFF0A7E8C)
-                                    : const Color(0xFF9CA3AF),
+                                    ? DesignTokens.primary
+                                    : DesignTokens.textSecondary,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -180,8 +181,8 @@ class BottomNavScaffold extends ConsumerWidget {
                               item.label,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: isSelected
-                                    ? const Color(0xFF0A7E8C)
-                                    : const Color(0xFF9CA3AF),
+                                    ? DesignTokens.primary
+                                    : DesignTokens.textSecondary,
                                 fontWeight: isSelected
                                     ? FontWeight.w700
                                     : FontWeight.w500,

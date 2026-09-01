@@ -6,6 +6,7 @@ import 'package:doctorly/utils/repository_exception.dart';
 
 /// Repository handling submission of user reports for doctor profiles.
 class ReportsRepository {
+  /// Creates a [ReportsRepository] with the given [SupabaseClient].
   ReportsRepository(this._client);
 
   final SupabaseClient _client;
@@ -33,6 +34,7 @@ class ReportsRepository {
         'status': 'pending',
       });
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }

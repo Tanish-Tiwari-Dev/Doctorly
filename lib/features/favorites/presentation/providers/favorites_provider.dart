@@ -5,6 +5,7 @@ import 'package:doctorly/features/favorites/data/repositories/favorites_reposito
 import 'package:doctorly/utils/error_localizer.dart';
 import 'package:doctorly/utils/repository_exception.dart';
 
+/// AsyncNotifier managing the set of favorite doctor IDs for the current user.
 class FavoritesNotifier extends AsyncNotifier<Set<String>> {
   @override
   Future<Set<String>> build() async {
@@ -20,6 +21,8 @@ class FavoritesNotifier extends AsyncNotifier<Set<String>> {
     }
   }
 
+  /// Toggles the favorite status of [doctorId] for the logged-in user.
+  /// Optimistically updates state and rolls back if the backend operation fails.
   Future<void> toggle(String doctorId) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
@@ -58,11 +61,13 @@ class FavoritesNotifier extends AsyncNotifier<Set<String>> {
     }
   }
 
+  /// Checks if [doctorId] is currently in the set of user favorites.
   bool isFavorite(String doctorId) {
     return state.valueOrNull?.contains(doctorId) ?? false;
   }
 }
 
+/// Provider managing user favorite doctor IDs.
 final favoritesProvider = AsyncNotifierProvider<FavoritesNotifier, Set<String>>(
   FavoritesNotifier.new,
 );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:doctorly/features/appointments/data/repositories/availability_repository.dart';
 import 'package:doctorly/features/appointments/presentation/providers/appointments_provider.dart';
@@ -12,7 +13,7 @@ import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/widgets/max_width_container.dart';
 
 final availabilitySlotsProvider =
-    FutureProvider.family<List<DateTime>, String>(
+    FutureProvider.autoDispose.family<List<DateTime>, String>(
   (ref, doctorId) async {
     final repo = ref.watch(availabilityRepositoryProvider);
     return repo.fetchSlots(doctorId);
@@ -43,7 +44,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.textPrimary,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
             content: Text(
               'Appointment confirmed successfully!',
@@ -62,7 +63,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.error,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
             content: Text(
               'Could not book appointment. Please try again.',
@@ -89,9 +90,55 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
 
     if (doctor == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF7F9FC),
-        body: const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: const Text('Book Appointment'),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(DesignTokens.md),
+          child: Shimmer.fromColors(
+            baseColor: DesignTokens.divider,
+            highlightColor: DesignTokens.cardBackground,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+                  ),
+                ),
+                const SizedBox(height: DesignTokens.lg),
+                Container(
+                  width: 140,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
+                  ),
+                ),
+                const SizedBox(height: DesignTokens.sm),
+                Row(
+                  children: List.generate(
+                    4,
+                    (i) => Expanded(
+                      child: Container(
+                        height: 60,
+                        margin: const EdgeInsets.symmetric(horizontal: DesignTokens.xs / 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }
@@ -99,12 +146,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
     final canConfirm = _selectedSlot != null && !submitting;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF111827)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -126,10 +173,10 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             children: [
               // 2. Doctor Mini-Profile (Top)
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(DesignTokens.sm + DesignTokens.xs),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(DesignTokens.medium),
+                  color: DesignTokens.cardBackground,
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   boxShadow: const [DesignTokens.cardShadow],
                 ),
                 child: Row(
@@ -140,7 +187,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xFFE5E7EB),
+                          color: AppColors.divider,
                           width: 1,
                         ),
                         color: AppColors.avatarBackground,
@@ -155,17 +202,17 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                 errorWidget: (_, _, _) => const Icon(
                                   Icons.person,
                                   size: 24,
-                                  color: Color(0xFF9CA3AF),
+                                  color: AppColors.textHint,
                                 ),
                               )
                             : const Icon(
                                 Icons.person,
                                 size: 24,
-                                color: Color(0xFF9CA3AF),
+                                color: AppColors.textHint,
                               ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,14 +246,44 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               const SizedBox(height: DesignTokens.lg),
 
               slotsAsync.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                loading: () => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: DesignTokens.lg),
+                  child: Shimmer.fromColors(
+                    baseColor: DesignTokens.divider,
+                    highlightColor: DesignTokens.cardBackground,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
+                          ),
+                        ),
+                        const SizedBox(height: DesignTokens.sm),
+                        Wrap(
+                          spacing: DesignTokens.sm,
+                          runSpacing: DesignTokens.sm,
+                          children: List.generate(
+                            6,
+                            (index) => Container(
+                              width: 90,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 error: (err, _) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  padding: const EdgeInsets.symmetric(vertical: DesignTokens.lg),
                   child: Center(
                     child: Text(
                       'Failed to load available appointment slots.',
@@ -219,12 +296,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 data: (slots) {
                   if (slots.isEmpty) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      padding: const EdgeInsets.symmetric(vertical: DesignTokens.xl),
                       child: Center(
                         child: Text(
                           'No available appointment slots at this time.',
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFF6B7280),
+                            color: AppColors.textSecondary,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
@@ -274,14 +351,14 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                         'Select Date',
                         style: theme.textTheme.titleLarge,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: DesignTokens.sm),
                       SizedBox(
                         height: 80,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: availableDates.length,
                           separatorBuilder: (_, _) =>
-                              const SizedBox(width: 12),
+                              const SizedBox(width: DesignTokens.sm),
                           itemBuilder: (context, index) {
                             final date = availableDates[index];
                             final isSelected = _isSameDay(date, activeDate);
@@ -304,12 +381,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? theme.colorScheme.primary
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
+                                      : DesignTokens.cardBackground,
+                                  borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                                   border: isSelected
                                       ? null
                                       : Border.all(
-                                          color: const Color(0xFFE5E7EB),
+                                          color: AppColors.divider,
                                           width: 1,
                                         ),
                                   boxShadow: isSelected
@@ -332,21 +409,21 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                           theme.textTheme.bodySmall?.copyWith(
                                         color: isSelected
                                             ? Colors.white.withValues(alpha: 0.9)
-                                            : const Color(0xFF6B7280),
+                                            : AppColors.textSecondary,
                                         fontWeight: isSelected
                                             ? FontWeight.w600
                                             : FontWeight.w500,
                                         fontSize: 12,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: DesignTokens.xs),
                                     Text(
                                       DateFormat('d').format(date),
                                       style:
                                           theme.textTheme.titleLarge?.copyWith(
                                         color: isSelected
                                             ? Colors.white
-                                            : const Color(0xFF111827),
+                                            : AppColors.textPrimary,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 18,
                                       ),
@@ -366,22 +443,22 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                         'Available Time',
                         style: theme.textTheme.titleLarge,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: DesignTokens.sm),
                       if (slotsForActiveDate.isEmpty)
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: DesignTokens.md),
                           child: Text(
                             'No slots available on this date.',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF6B7280),
+                              color: AppColors.textSecondary,
                               fontStyle: FontStyle.italic,
                             ),
                           ),
                         )
                       else
                         Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
+                          spacing: DesignTokens.sm,
+                          runSpacing: DesignTokens.sm,
                           children: slotsForActiveDate.map((slot) {
                             final isSelected = _selectedSlot == slot;
                             return GestureDetector(
@@ -393,14 +470,14 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 200),
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
+                                  horizontal: DesignTokens.md,
+                                  vertical: DesignTokens.sm,
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFFE6F7F8)
-                                      : const Color(0xFFF1F3F6),
-                                  borderRadius: BorderRadius.circular(12),
+                                      ? AppColors.primary.withValues(alpha: 0.1)
+                                      : DesignTokens.inputBackground,
+                                  borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                                   border: Border.all(
                                     color: isSelected
                                         ? theme.colorScheme.primary
@@ -413,7 +490,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: isSelected
                                         ? theme.colorScheme.primary
-                                        : const Color(0xFF374151),
+                                        : AppColors.textPrimary,
                                     fontWeight: isSelected
                                         ? FontWeight.w700
                                         : FontWeight.w500,
@@ -440,10 +517,10 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         child: Container(
           padding: const EdgeInsets.all(DesignTokens.md),
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: DesignTokens.cardBackground,
             border: Border(
               top: BorderSide(
-                color: Color(0xFFE5E7EB),
+                color: AppColors.divider,
                 width: 1,
               ),
             ),
@@ -460,7 +537,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                     Text(
                       'Selected Slot',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF6B7280),
+                        color: AppColors.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -473,7 +550,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: _selectedSlot != null
                             ? theme.colorScheme.primary
-                            : const Color(0xFF9CA3AF),
+                            : AppColors.textHint,
                         fontWeight: _selectedSlot != null
                             ? FontWeight.bold
                             : FontWeight.normal,
@@ -486,7 +563,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
 
               // Right: Pill-shaped Confirm Button
               PressableScale(
@@ -500,13 +577,13 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                         theme.colorScheme.primary.withValues(alpha: 0.4),
                     foregroundColor: Colors.white,
                     elevation: canConfirm ? 3 : 0,
-                    shadowColor: const Color(0x330A7E8C),
+                    shadowColor: AppColors.primary.withValues(alpha: 0.2),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 28,
-                      vertical: 14,
+                      horizontal: DesignTokens.lg,
+                      vertical: DesignTokens.sm + DesignTokens.xs,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(DesignTokens.radiusLarge),
                     ),
                   ),
                   child: submitting

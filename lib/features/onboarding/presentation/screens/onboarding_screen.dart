@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:doctorly/features/onboarding/presentation/providers/onboarding_provider.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -21,19 +22,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       icon: Icons.health_and_safety,
       title: 'Your health,\nsimplified',
       subtitle: 'Find trusted specialists, book appointments, and manage your care — all in one place.',
-      gradient: [Color(0xFFE0F0FF), Color(0xFFFFFFFF)],
+      gradient: [DesignTokens.primaryLight, Colors.white],
     ),
     _OnboardingPageData(
       icon: Icons.medical_services,
       title: 'Expert care,\non demand',
       subtitle: 'Browse verified doctors by specialty, read reviews, and pick the one who fits your needs.',
-      gradient: [Color(0xFFE6F4F1), Color(0xFFFFFFFF)],
+      gradient: [DesignTokens.primaryLight, Colors.white],
     ),
     _OnboardingPageData(
       icon: Icons.location_on,
       title: 'Care near you',
       subtitle: 'Discover top-rated doctors around you and get directions, ratings, and availability in seconds.',
-      gradient: [Color(0xFFEDE9FE), Color(0xFFFFFFFF)],
+      gradient: [DesignTokens.primaryLight, Colors.white],
     ),
   ];
 
@@ -68,19 +69,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final isLast = _currentPage == _pages.length - 1;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: DesignTokens.scaffoldBackground,
       body: SafeArea(
         child: Stack(
           children: [
             Positioned(
-              top: 8,
-              right: 8,
+              top: DesignTokens.xs,
+              right: DesignTokens.xs,
               child: TextButton(
                 onPressed: _completeAndNavigate,
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF64748B),
+                  foregroundColor: DesignTokens.textSecondary,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: DesignTokens.md,
                     vertical: 10,
                   ),
                 ),
@@ -109,11 +110,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
                 _PageIndicators(count: _pages.length, current: _currentPage),
-                const SizedBox(height: 32),
+                const SizedBox(height: DesignTokens.xl),
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
+                    horizontal: DesignTokens.xl,
+                    vertical: DesignTokens.md,
                   ),
                   child: SizedBox(
                     width: double.infinity,
@@ -121,7 +122,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     child: ElevatedButton(
                       onPressed: _onNext,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0A6EBD),
+                        backgroundColor: DesignTokens.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shadowColor: Colors.transparent,
@@ -154,7 +155,7 @@ class _OnboardingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: DesignTokens.xl, vertical: DesignTokens.md),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -171,7 +172,7 @@ class _OnboardingPage extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF0A6EBD).withValues(alpha: 0.10),
+                    color: DesignTokens.primary.withValues(alpha: 0.10),
                     blurRadius: 40,
                     spreadRadius: 0,
                     offset: const Offset(0, 16),
@@ -185,24 +186,24 @@ class _OnboardingPage extends StatelessWidget {
                 ],
               ),
               child: Center(
-                child: Icon(page.icon, size: 64, color: const Color(0xFF0A6EBD)),
+                child: Icon(page.icon, size: 64, color: DesignTokens.primary),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: DesignTokens.lg),
             Text(
               page.title,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: Colors.black87,
+                color: DesignTokens.textPrimary,
                 height: 1.15,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: DesignTokens.sm),
             Text(
               page.subtitle,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
+                color: DesignTokens.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -231,7 +232,7 @@ class _PageIndicators extends StatelessWidget {
           width: isActive ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF0A6EBD) : Colors.grey[300],
+            color: isActive ? DesignTokens.primary : DesignTokens.divider,
             borderRadius: BorderRadius.circular(10),
           ),
         );

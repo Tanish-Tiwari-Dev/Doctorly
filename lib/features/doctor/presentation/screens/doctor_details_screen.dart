@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:doctorly/features/doctor/data/repositories/reviews_repository.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
+import 'package:doctorly/features/doctor/presentation/widgets/doctor_card_skeleton.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/leave_review_sheet.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/report_doctor_sheet.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/top_rated_doctor_card.dart';
@@ -37,9 +39,57 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
     final theme = Theme.of(context);
 
     if (doctor == null) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(DesignTokens.md),
+          child: Shimmer.fromColors(
+            baseColor: DesignTokens.divider,
+            highlightColor: DesignTokens.cardBackground,
+            child: Column(
+              children: [
+                const SizedBox(height: DesignTokens.md),
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(height: DesignTokens.md),
+                Container(
+                  width: 180,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
+                  ),
+                ),
+                const SizedBox(height: DesignTokens.xs),
+                Container(
+                  width: 120,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
+                  ),
+                ),
+                const SizedBox(height: DesignTokens.lg),
+                Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }
@@ -78,7 +128,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                 'Experienced ${doctor.specialty} dedicated to providing top-notch medical care, comprehensive diagnoses, and personalized treatment plans for every patient.');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
+      backgroundColor: AppColors.background,
       body: MaxWidthContainer(
         child: CustomScrollView(
           slivers: [
@@ -87,7 +137,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
               expandedHeight: 320.0,
               pinned: true,
               elevation: 0,
-              backgroundColor: const Color(0xFF0A7E8C),
+              backgroundColor: AppColors.primary,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded,
                     color: Colors.white, size: 20),
@@ -124,7 +174,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF0A7E8C), Color(0xFF14B8C4)],
+                      colors: [AppColors.primary, AppColors.secondary],
                     ),
                   ),
                   child: SafeArea(
@@ -160,18 +210,18 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                                       errorWidget: (_, _, _) => const Icon(
                                         Icons.person,
                                         size: 52,
-                                        color: Color(0xFF9CA3AF),
+                                        color: AppColors.textHint,
                                       ),
                                     )
                                   : const Icon(
                                       Icons.person,
                                       size: 52,
-                                      color: Color(0xFF9CA3AF),
+                                      color: AppColors.textHint,
                                     ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: DesignTokens.sm),
                         // Name
                         Padding(
                           padding: const EdgeInsets.symmetric(
@@ -187,7 +237,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: DesignTokens.xs),
                         // Specialty
                         Text(
                           doctor.qualification != null &&
@@ -201,10 +251,10 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                           textAlign: TextAlign.center,
                         ),
                         if (doctor.isVerified) ...[
-                          const SizedBox(height: 8),
+                          const SizedBox(height: DesignTokens.xs),
                           const VerifiedBadge(compact: true),
                         ],
-                        const SizedBox(height: 24),
+                        const SizedBox(height: DesignTokens.lg),
                       ],
                     ),
                   ),
@@ -226,7 +276,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                         label: 'Patients',
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: DesignTokens.sm),
                     Expanded(
                       child: _StatCard(
                         icon: Icons.work_history_rounded,
@@ -234,7 +284,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                         label: 'Experience',
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: DesignTokens.sm),
                     Expanded(
                       child: _StatCard(
                         icon: Icons.star_rounded,
@@ -252,9 +302,9 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
               child: Container(
                 margin: const EdgeInsets.only(top: DesignTokens.lg),
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF7F9FC),
+                  color: AppColors.background,
                   borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(24),
+                    top: Radius.circular(DesignTokens.radiusLarge),
                   ),
                 ),
                 child: Padding(
@@ -279,18 +329,18 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                                 if (doctor.isAvailableToday)
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
+                                        horizontal: DesignTokens.sm, vertical: DesignTokens.xs / 2),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFECFDF5),
+                                      color: DesignTokens.success.withValues(alpha: 0.1),
                                       borderRadius:
                                           BorderRadius.circular(
-                                              DesignTokens.small),
+                                              DesignTokens.radiusSmall),
                                     ),
                                     child: Text(
                                       'Available Today',
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(
-                                        color: const Color(0xFF047857),
+                                        color: DesignTokens.success,
                                         fontWeight: FontWeight.w600,
                                         fontSize: 12,
                                       ),
@@ -302,7 +352,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                             Text(
                               bioText,
                               style: theme.textTheme.bodyLarge?.copyWith(
-                                color: const Color(0xFF374151),
+                                color: AppColors.textPrimary,
                                 height: 1.6,
                               ),
                               maxLines:
@@ -311,7 +361,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                                   ? TextOverflow.visible
                                   : TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: DesignTokens.xs),
                             GestureDetector(
                               onTap: () => setState(() =>
                                   _isAboutExpanded =
@@ -337,7 +387,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                               ...activeExpertise.map((item) =>
                                   Padding(
                                     padding: const EdgeInsets.only(
-                                        bottom: 6),
+                                        bottom: DesignTokens.xs),
                                     child: Row(
                                       children: [
                                         Icon(
@@ -355,8 +405,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                                             style: theme.textTheme
                                                 .bodySmall
                                                 ?.copyWith(
-                                              color: const Color(
-                                                  0xFF374151),
+                                              color: AppColors.textPrimary,
                                             ),
                                           ),
                                         ),
@@ -368,7 +417,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: DesignTokens.md),
 
                       // ── Reviews Section Card ──
                       _SectionCard(
@@ -379,7 +428,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: DesignTokens.md),
 
                       // ── Recommended Doctors Section ──
                       _SectionCard(
@@ -404,9 +453,9 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
         child: Container(
           padding: const EdgeInsets.all(DesignTokens.md),
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: DesignTokens.cardBackground,
             border: Border(
-              top: BorderSide(color: Color(0xFFE5E7EB), width: 1),
+              top: BorderSide(color: AppColors.divider, width: 1),
             ),
           ),
           child: Row(
@@ -419,7 +468,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                   Text(
                     'Consultation Fee',
                     style: theme.textTheme.bodySmall
-                        ?.copyWith(color: const Color(0xFF6B7280)),
+                        ?.copyWith(color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -431,7 +480,7 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: DesignTokens.md),
               Flexible(
                 child: _PressableScale(
                   child: ElevatedButton.icon(
@@ -452,11 +501,11 @@ class _DoctorDetailsScreenState extends ConsumerState<DoctorDetailsScreen> {
                       backgroundColor: theme.colorScheme.primary,
                       foregroundColor: Colors.white,
                       elevation: 3,
-                      shadowColor: const Color(0x330A7E8C),
+                      shadowColor: AppColors.primary.withValues(alpha: 0.2),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 14),
+                          horizontal: DesignTokens.lg, vertical: DesignTokens.sm + DesignTokens.xs),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(DesignTokens.radiusLarge),
                       ),
                     ),
                   ),
@@ -492,30 +541,30 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(DesignTokens.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(DesignTokens.medium),
+        color: DesignTokens.cardBackground,
+        borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
         boxShadow: const [DesignTokens.cardShadow],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: AppColors.primary, size: 24),
-          const SizedBox(height: 8),
+          const SizedBox(height: DesignTokens.sm),
           Text(
             value,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF111827),
+              color: AppColors.textPrimary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: DesignTokens.xs),
           Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: const Color(0xFF6B7280),
+              color: AppColors.textSecondary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -537,8 +586,8 @@ class _SectionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(DesignTokens.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(DesignTokens.medium),
+        color: DesignTokens.cardBackground,
+        borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
         boxShadow: const [DesignTokens.cardShadow],
       ),
       child: child,
@@ -572,18 +621,18 @@ class _ReviewsSection extends ConsumerWidget {
             Row(
               children: [
                 Text('Reviews', style: theme.textTheme.titleLarge),
-                const SizedBox(width: 8),
+                const SizedBox(width: DesignTokens.sm),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                      horizontal: DesignTokens.sm, vertical: DesignTokens.xs / 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFECFDF5),
-                    borderRadius: BorderRadius.circular(8),
+                    color: DesignTokens.success.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                   ),
                   child: Text(
                     '${doctorRating.toStringAsFixed(1)} ⭐',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: const Color(0xFF047857),
+                      color: DesignTokens.success,
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
                     ),
@@ -607,17 +656,27 @@ class _ReviewsSection extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: DesignTokens.sm),
         reviewsAsync.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(
-              child:
-                  CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Shimmer.fromColors(
+            baseColor: DesignTokens.divider,
+            highlightColor: DesignTokens.cardBackground,
+            child: Column(
+              children: List.generate(
+                2,
+                (index) => Container(
+                  height: 90,
+                  margin: const EdgeInsets.only(bottom: DesignTokens.sm),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+                  ),
+                ),
+              ),
             ),
           ),
           error: (err, _) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: DesignTokens.xs),
             child: Text(
               'Could not load reviews.',
               style: theme.textTheme.bodySmall
@@ -637,19 +696,19 @@ class _ReviewsSection extends ConsumerWidget {
                           size: 48,
                           color: AppColors.primary
                               .withValues(alpha: 0.3)),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: DesignTokens.sm),
                       Text(
                         'No reviews yet',
                         style: theme.textTheme.titleMedium?.copyWith(
-                          color: const Color(0xFF374151),
+                          color: AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: DesignTokens.xs),
                       Text(
                         'Be the first to review $doctorName!',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF6B7280),
+                          color: AppColors.textSecondary,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -663,11 +722,11 @@ class _ReviewsSection extends ConsumerWidget {
             return Column(
               children: topReviews.map((review) {
                 return Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(top: DesignTokens.sm),
+                  padding: const EdgeInsets.all(DesignTokens.sm + DesignTokens.xs),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8F9FB),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -680,13 +739,13 @@ class _ReviewsSection extends ConsumerWidget {
                             height: 36,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFFE5E7EB),
+                              color: AppColors.divider,
                             ),
                             child: const Icon(Icons.person,
                                 size: 22,
-                                color: Color(0xFF6B7280)),
+                                color: AppColors.textSecondary),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: DesignTokens.sm),
                           Expanded(
                             child: Column(
                               crossAxisAlignment:
@@ -725,7 +784,7 @@ class _ReviewsSection extends ConsumerWidget {
                                 review.createdAt.toLocal()),
                             style: theme.textTheme.bodySmall
                                 ?.copyWith(
-                              color: const Color(0xFF9CA3AF),
+                              color: AppColors.textHint,
                               fontSize: 11,
                             ),
                           ),
@@ -733,12 +792,12 @@ class _ReviewsSection extends ConsumerWidget {
                       ),
                       if (review.comment != null &&
                           review.comment!.isNotEmpty) ...[
-                        const SizedBox(height: 8),
+                        const SizedBox(height: DesignTokens.sm),
                         Text(
                           review.comment!,
                           style:
                               theme.textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF374151),
+                            color: AppColors.textPrimary,
                             height: 1.4,
                           ),
                         ),
@@ -781,11 +840,13 @@ class _RecommendedDoctorsSection extends ConsumerWidget {
         Text('Recommended Doctors', style: theme.textTheme.titleLarge),
         const SizedBox(height: DesignTokens.sm),
         similarAsync.when(
-          loading: () => const SizedBox(
+          loading: () => SizedBox(
             height: 140,
-            child: Center(
-              child:
-                  CircularProgressIndicator(color: AppColors.primary),
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: 3,
+              separatorBuilder: (_, _) => const SizedBox(width: DesignTokens.sm),
+              itemBuilder: (_, _) => const DoctorCardSkeleton(compact: true),
             ),
           ),
           error: (err, _) => Padding(
@@ -805,7 +866,7 @@ class _RecommendedDoctorsSection extends ConsumerWidget {
                 child: Text(
                   'No other $specialty doctors found.',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF6B7280),
+                    color: AppColors.textSecondary,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -831,10 +892,9 @@ class _RecommendedDoctorsSection extends ConsumerWidget {
 
 /// Micro-interaction: scale-down on press for the booking button.
 class _PressableScale extends StatefulWidget {
-  const _PressableScale({required this.child, this.scaleDown = 0.97});
+  const _PressableScale({required this.child});
 
   final Widget child;
-  final double scaleDown;
 
   @override
   State<_PressableScale> createState() => _PressableScaleState();
@@ -850,7 +910,7 @@ class _PressableScaleState extends State<_PressableScale> {
       onPointerUp: (_) => setState(() => _isPressed = false),
       onPointerCancel: (_) => setState(() => _isPressed = false),
       child: AnimatedScale(
-        scale: _isPressed ? widget.scaleDown : 1.0,
+        scale: _isPressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 100),
         curve: Curves.easeOutCubic,
         child: widget.child,

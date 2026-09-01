@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
 
 /// Skeleton loading widget matching the layout of an appointment card.
@@ -16,15 +15,15 @@ class AppointmentCardSkeleton extends StatelessWidget {
         vertical: DesignTokens.xs,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(DesignTokens.medium),
+        color: DesignTokens.cardBackground,
+        borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
         boxShadow: const [DesignTokens.cardShadow],
       ),
       child: Padding(
         padding: const EdgeInsets.all(DesignTokens.md),
         child: Shimmer.fromColors(
-          baseColor: AppColors.background,
-          highlightColor: Colors.white,
+          baseColor: DesignTokens.divider,
+          highlightColor: DesignTokens.cardBackground,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -47,16 +46,16 @@ class AppointmentCardSkeleton extends StatelessWidget {
                       height: 16,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: DesignTokens.xs),
                     Container(
                       width: 100,
                       height: 12,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
                       ),
                     ),
                     const SizedBox(height: DesignTokens.sm),
@@ -65,7 +64,7 @@ class AppointmentCardSkeleton extends StatelessWidget {
                       height: 12,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
                       ),
                     ),
                   ],
@@ -80,16 +79,16 @@ class AppointmentCardSkeleton extends StatelessWidget {
                     height: 24,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(DesignTokens.small),
+                      borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: DesignTokens.md),
                   Container(
                     width: 42,
                     height: 18,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
                     ),
                   ),
                 ],

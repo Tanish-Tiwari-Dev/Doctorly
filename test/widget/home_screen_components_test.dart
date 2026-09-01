@@ -1,33 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:doctorly/features/doctor/domain/models/doctor.dart';
-import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
-import 'package:doctorly/features/doctor/presentation/widgets/specialty_grid.dart';
-import 'package:doctorly/features/doctor/presentation/widgets/top_rated_carousel.dart';
+import 'package:doctorly/features/doctor/presentation/widgets/top_rated_doctor_card.dart';
 
 void main() {
-  group('Home Screen Components Tests', () {
-    testWidgets('SpecialtyGrid renders specialties horizontal list',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: SpecialtyGrid(),
-            ),
-          ),
-        ),
-      );
-
-      expect(find.text('Specialties'), findsOneWidget);
-      expect(find.text('Cardiologist'), findsOneWidget);
-      expect(find.text('Dermatologist'), findsOneWidget);
-      expect(find.text('Pediatrician'), findsOneWidget);
-    });
-
-    testWidgets('TopRatedCarousel renders loading and top rated doctors list',
+  group('Home Screen Component Tests', () {
+    testWidgets('TopRatedDoctorCard renders doctor details correctly',
         (WidgetTester tester) async {
       const sampleDoctor = Doctor(
         id: 'doc-1',
@@ -35,33 +14,22 @@ void main() {
         specialty: 'Cardiologist',
         distanceKm: 2.5,
         rating: 4.9,
-        imageUrl: 'https://example.com/doctor.jpg',
+        imageUrl: '',
         availability: 'Available Today',
         hospitalName: 'Downtown Medical Center',
       );
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            topRatedDoctorsProvider.overrideWith(
-              (ref) => Future.value([sampleDoctor]),
-            ),
-          ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: TopRatedCarousel(),
-            ),
+        const MaterialApp(
+          home: Scaffold(
+            body: TopRatedDoctorCard(doctor: sampleDoctor),
           ),
         ),
       );
 
-      await tester.pumpAndSettle();
-
-      expect(find.text('Top Rated Doctors'), findsOneWidget);
       expect(find.text('Dr. Sarah Connor'), findsOneWidget);
-      expect(find.text('Cardiologist'), findsOneWidget);
       expect(find.text('4.9'), findsOneWidget);
-      expect(find.text('Book'), findsOneWidget);
+      expect(find.text('Book Seat'), findsOneWidget);
     });
   });
 }

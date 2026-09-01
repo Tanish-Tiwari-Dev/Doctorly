@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import 'package:doctorly/utils/design_tokens.dart';
+
 /// Skeleton loading widget matching the healthcare design specs of DoctorCard.
 class DoctorCardSkeleton extends StatelessWidget {
   /// Creates a [DoctorCardSkeleton] instance.
@@ -15,22 +17,19 @@ class DoctorCardSkeleton extends StatelessWidget {
       constraints: const BoxConstraints(maxWidth: 350.0, minHeight: 99.0),
       margin: compact
           ? EdgeInsets.zero
-          : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      padding: const EdgeInsets.all(12.0),
+          : const EdgeInsets.symmetric(
+              horizontal: DesignTokens.md,
+              vertical: DesignTokens.sm,
+            ),
+      padding: const EdgeInsets.all(DesignTokens.sm + DesignTokens.xs),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
+        color: DesignTokens.cardBackground,
+        borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+        boxShadow: const [DesignTokens.cardShadow],
       ),
       child: Shimmer.fromColors(
-        baseColor: const Color(0xFFE0E0E0),
-        highlightColor: Colors.white,
+        baseColor: DesignTokens.divider,
+        highlightColor: DesignTokens.cardBackground,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -43,7 +42,7 @@ class DoctorCardSkeleton extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            const SizedBox(width: 12.0),
+            const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
 
             // Middle Content
             Expanded(
@@ -59,30 +58,30 @@ class DoctorCardSkeleton extends StatelessWidget {
                           height: 16.0,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(4.0),
+                            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8.0),
+                      const SizedBox(width: DesignTokens.sm),
                       Container(
                         width: 36.0,
                         height: 16.0,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.0),
+                          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8.0),
+                  const SizedBox(height: DesignTokens.sm),
                   Container(
                     height: 14.0,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(4.0),
+                      borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
                     ),
                   ),
-                  const SizedBox(height: 12.0),
+                  const SizedBox(height: DesignTokens.sm + DesignTokens.xs),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -91,17 +90,17 @@ class DoctorCardSkeleton extends StatelessWidget {
                           height: 14.0,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(4.0),
+                            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 2),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8.0),
+                      const SizedBox(width: DesignTokens.sm),
                       Container(
                         width: 60.0,
                         height: 28.0,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.0),
+                          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                         ),
                       ),
                     ],
@@ -115,7 +114,3 @@ class DoctorCardSkeleton extends StatelessWidget {
     );
   }
 }
-
-
-
-

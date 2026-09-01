@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:doctorly/features/doctor/domain/models/specialty.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_filter_provider.dart';
 import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 
 /// Modal bottom sheet widget for setting doctor search filters.
 class DoctorFilterSheet extends ConsumerStatefulWidget {
@@ -15,9 +16,11 @@ class DoctorFilterSheet extends ConsumerStatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: DesignTokens.cardBackground,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(DesignTokens.radiusLarge),
+        ),
       ),
       builder: (context) => const DoctorFilterSheet(),
     );
@@ -70,7 +73,12 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 20, 24, 20 + bottomInset),
+      padding: EdgeInsets.fromLTRB(
+        DesignTokens.lg,
+        DesignTokens.md + DesignTokens.xs,
+        DesignTokens.lg,
+        DesignTokens.md + DesignTokens.xs + bottomInset,
+      ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -82,11 +90,11 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 4),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -97,7 +105,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                       color: AppColors.primary,
                       size: 24,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
                     Text(
                       'Filter Doctors',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -119,7 +127,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
 
             // Minimum Rating Slider
             Row(
@@ -139,7 +147,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                       color: AppColors.warning,
                       size: 18,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: DesignTokens.xs),
                     Text(
                       '${_minRating.toStringAsFixed(1)}+ Stars',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -163,7 +171,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                 setState(() => _minRating = val);
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
 
             // Maximum Distance Slider
             Row(
@@ -197,7 +205,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                 setState(() => _maxDistanceKm = val.round());
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
 
             // Specialty Dropdown
             Text(
@@ -207,12 +215,14 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                     color: AppColors.textPrimary,
                   ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: DesignTokens.sm),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(
+                horizontal: DesignTokens.sm + DesignTokens.xs,
+              ),
               decoration: BoxDecoration(
                 color: AppColors.background,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String?>(
@@ -246,12 +256,12 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: DesignTokens.md),
 
             // Open Now Only Switch
             Material(
               color: AppColors.background,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
               child: SwitchListTile(
                 value: _openNowOnly,
                 activeThumbColor: AppColors.primary,
@@ -273,7 +283,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                 },
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: DesignTokens.lg),
 
             // Apply Filters Button
             SizedBox(
@@ -285,7 +295,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   ),
                   textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontSize: 16,

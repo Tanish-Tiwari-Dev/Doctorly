@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:doctorly/features/appointments/data/repositories/appointments_repository.dart';
 import 'package:doctorly/features/appointments/domain/models/appointment.dart';
 import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
-import 'package:doctorly/providers/notification_provider.dart';
+import 'package:doctorly/features/appointments/presentation/providers/notification_provider.dart';
 import 'package:doctorly/utils/error_localizer.dart';
 import 'package:doctorly/utils/repository_exception.dart';
 
+/// AsyncNotifier managing the user's list of booked appointments.
 class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
   @override
   Future<List<Appointment>> build() async {
@@ -20,6 +21,7 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
     }
   }
 
+  /// Creates a new appointment with [doctorId] at [scheduledFor] and schedules a local notification.
   Future<void> create(String doctorId, DateTime scheduledFor) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
@@ -47,6 +49,7 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
     }
   }
 
+  /// Cancels the appointment [appointmentId] and cancels the associated local notification.
   Future<void> cancel(String appointmentId) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
@@ -69,6 +72,7 @@ class AppointmentsNotifier extends AsyncNotifier<List<Appointment>> {
   }
 }
 
+/// Provider managing appointments list state and actions.
 final appointmentsProvider =
     AsyncNotifierProvider<AppointmentsNotifier, List<Appointment>>(
       AppointmentsNotifier.new,

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:doctorly/providers/notification_provider.dart';
+import 'package:doctorly/features/appointments/presentation/providers/notification_provider.dart';
 import 'package:doctorly/services/notification_service.dart';
 
 void main() {

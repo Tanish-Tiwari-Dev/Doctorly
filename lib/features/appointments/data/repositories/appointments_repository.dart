@@ -5,27 +5,36 @@ import 'package:doctorly/features/appointments/domain/models/appointment.dart';
 import 'package:doctorly/providers/supabase_client_provider.dart';
 import 'package:doctorly/utils/repository_exception.dart';
 
+/// Repository for creating, querying, and cancelling appointments in Supabase.
 class AppointmentsRepository {
+  /// Creates an [AppointmentsRepository] with the given [SupabaseClient].
   AppointmentsRepository(this._client);
 
   final SupabaseClient _client;
 
-  Future<List<Appointment>> fetchForUser(String userId) async {
+  /// Fetches appointments for [userId] up to [limit].
+  Future<List<Appointment>> fetchForUser(
+    String userId, {
+    int limit = 50,
+  }) async {
     try {
       final res = await _client
           .from('appointments')
           .select()
           .eq('user_id', userId)
-          .order('scheduled_for', ascending: true);
+          .order('scheduled_for', ascending: true)
+          .limit(limit);
       final list = res as List;
       return list
           .map((row) => Appointment.fromJson(row as Map<String, dynamic>))
           .toList();
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
+  /// Creates a new appointment for [userId] with [doctorId] at [scheduledFor].
   Future<Appointment> create(
     String userId,
     String doctorId,
@@ -44,10 +53,12 @@ class AppointmentsRepository {
           .single();
       return Appointment.fromJson(res);
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
+  /// Cancels an appointment identified by [appointmentId].
   Future<void> cancel(String appointmentId) async {
     try {
       await _client
@@ -55,11 +66,13 @@ class AppointmentsRepository {
           .update({'status': 'cancelled'})
           .eq('id', appointmentId);
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
 }
 
+/// Provider for accessing [AppointmentsRepository].
 final appointmentsRepositoryProvider = Provider<AppointmentsRepository>((ref) {
   return AppointmentsRepository(ref.read(supabaseClientProvider));
 });

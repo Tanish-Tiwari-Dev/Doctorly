@@ -139,71 +139,71 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF7F9FC),
-        primaryColor: const Color(0xFF0A7E8C),
-        cardColor: Colors.white,
-        dividerColor: const Color(0xFFE5E7EB),
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0A7E8C))
-            .copyWith(
-              primary: const Color(0xFF0A7E8C),
-              surface: const Color(0xFFF7F9FC),
-              onSurface: const Color(0xFF111827),
-              secondary: const Color(0xFF6B7280),
-            ),
+        scaffoldBackgroundColor: DesignTokens.scaffoldBackground,
+        primaryColor: DesignTokens.primary,
+        cardColor: DesignTokens.cardBackground,
+        dividerColor: DesignTokens.divider,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: DesignTokens.primary,
+        ).copyWith(
+          primary: DesignTokens.primary,
+          surface: DesignTokens.scaffoldBackground,
+          onSurface: DesignTokens.textPrimary,
+          secondary: DesignTokens.textSecondary,
+          error: DesignTokens.error,
+        ),
         textTheme: GoogleFonts.plusJakartaSansTextTheme(
           ThemeData.light().textTheme,
         ).copyWith(
           headlineLarge: GoogleFonts.plusJakartaSans(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF111827),
+            color: DesignTokens.textPrimary,
           ),
           headlineMedium: GoogleFonts.plusJakartaSans(
             fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF111827),
+            fontWeight: FontWeight.w600,
+            color: DesignTokens.textPrimary,
           ),
           titleLarge: GoogleFonts.plusJakartaSans(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF1F2937),
+            color: const Color(0xFF334155),
           ),
           bodyLarge: GoogleFonts.plusJakartaSans(
             fontSize: 16,
             fontWeight: FontWeight.normal,
-            color: const Color(0xFF374151),
+            color: const Color(0xFF475569),
           ),
           bodyMedium: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             fontWeight: FontWeight.normal,
-            color: const Color(0xFF4B5563),
+            color: const Color(0xFF475569),
           ),
           bodySmall: GoogleFonts.plusJakartaSans(
             fontSize: 12,
             fontWeight: FontWeight.normal,
-            color: const Color(0xFF6B7280),
+            color: DesignTokens.textSecondary,
           ),
         ),
         cardTheme: const CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(16),
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(20.0)),
           ),
-          color: Colors.white,
-          shadowColor: Color(0x0A1A2B33),
+          color: DesignTokens.cardBackground,
+          shadowColor: Color(0x0F1E293B),
           surfaceTintColor: Colors.transparent,
         ),
         appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFFF7F9FC),
+          backgroundColor: DesignTokens.scaffoldBackground,
           elevation: 0,
           centerTitle: false,
-          foregroundColor: const Color(0xFF111827),
+          foregroundColor: DesignTokens.textPrimary,
           titleTextStyle: GoogleFonts.plusJakartaSans(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF111827),
+            color: DesignTokens.textPrimary,
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -219,7 +219,10 @@ class MainApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF0A7E8C), width: 2),
+            borderSide: const BorderSide(
+              color: DesignTokens.primary,
+              width: 2,
+            ),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: DesignTokens.md,
@@ -228,18 +231,22 @@ class MainApp extends StatelessWidget {
         ),
         navigationRailTheme: const NavigationRailThemeData(
           backgroundColor: Colors.white,
-          selectedIconTheme: IconThemeData(color: Color(0xFF0A7E8C)),
-          unselectedIconTheme: IconThemeData(color: Color(0xFF64748B)),
+          selectedIconTheme: IconThemeData(color: DesignTokens.primary),
+          unselectedIconTheme: IconThemeData(
+            color: DesignTokens.textSecondary,
+          ),
           selectedLabelTextStyle: TextStyle(
             fontWeight: FontWeight.w600,
-            color: Color(0xFF0A7E8C),
+            color: DesignTokens.primary,
           ),
-          unselectedLabelTextStyle: TextStyle(color: Color(0xFF64748B)),
+          unselectedLabelTextStyle: TextStyle(
+            color: DesignTokens.textSecondary,
+          ),
         ),
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: Colors.white,
           elevation: 0,
-          indicatorColor: const Color(0xFF0A7E8C).withValues(alpha: 0.12),
+          indicatorColor: DesignTokens.primaryLight,
           labelTextStyle: WidgetStateProperty.all(
             GoogleFonts.plusJakartaSans(
               fontSize: 12,

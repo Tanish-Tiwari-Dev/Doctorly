@@ -9,10 +9,12 @@ import 'package:doctorly/utils/repository_exception.dart';
 
 /// Repository for managing authentication calls via Supabase.
 class AuthRepository {
+  /// Creates an [AuthRepository] with the given [SupabaseClient].
   AuthRepository(this._client);
 
   final SupabaseClient _client;
 
+  /// Key used in SharedPreferences to record explicit guest mode selection.
   static const String guestModeExplicitlyChosenKey =
       'guest_mode_explicitly_chosen';
 
@@ -53,6 +55,7 @@ class AuthRepository {
     } on AuthException {
       rethrow;
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
@@ -71,10 +74,12 @@ class AuthRepository {
     } on AuthException {
       rethrow;
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
+  /// Google Web Client ID injected via --dart-define.
   static const String googleWebClientId = String.fromEnvironment(
     'GOOGLE_WEB_CLIENT_ID',
     defaultValue:
@@ -137,6 +142,7 @@ class AuthRepository {
     } on AuthException {
       rethrow;
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
@@ -148,6 +154,7 @@ class AuthRepository {
     } on AuthException {
       rethrow;
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
@@ -160,6 +167,7 @@ class AuthRepository {
     } on AuthException {
       rethrow;
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
@@ -172,6 +180,7 @@ class AuthRepository {
         params: {'p_old_anon_id': oldAnonId, 'p_new_user_id': newUserId},
       );
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
@@ -184,6 +193,7 @@ class AuthRepository {
     } on AuthException {
       rethrow;
     } catch (e) {
+      if (e is RepositoryException) rethrow;
       throw RepositoryException(classifyError(e), e.toString());
     }
   }

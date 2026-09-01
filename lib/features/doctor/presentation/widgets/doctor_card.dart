@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:doctorly/features/doctor/domain/models/doctor.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 
 /// A card widget displaying doctor information matching exact Figma layout specifications.
 class DoctorCard extends StatelessWidget {
@@ -25,6 +25,8 @@ class DoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     final String ratingStr =
         doctor.rating > 0 ? doctor.rating.toStringAsFixed(1) : '4.3';
 
@@ -50,18 +52,15 @@ class DoctorCard extends StatelessWidget {
       child: Container(
         margin: compact
             ? EdgeInsets.zero
-            : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        padding: const EdgeInsets.all(12.0),
+            : const EdgeInsets.symmetric(
+                horizontal: DesignTokens.md,
+                vertical: DesignTokens.sm,
+              ),
+        padding: const EdgeInsets.all(DesignTokens.sm + DesignTokens.xs),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFFFF),
-          borderRadius: BorderRadius.circular(16.0),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
+          color: DesignTokens.cardBackground,
+          borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+          boxShadow: const [DesignTokens.cardShadow],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +70,7 @@ class DoctorCard extends StatelessWidget {
               width: 60.0,
               height: 60.0,
               decoration: const BoxDecoration(
-                color: Color(0xFFE6F7F8),
+                color: DesignTokens.primaryLight,
                 shape: BoxShape.circle,
               ),
               child: ClipOval(
@@ -85,7 +84,7 @@ class DoctorCard extends StatelessWidget {
                           child: Icon(
                             Icons.person_rounded,
                             size: 31.0,
-                            color: Color(0xFF0A7E8C),
+                            color: DesignTokens.primary,
                           ),
                         ),
                       )
@@ -93,12 +92,12 @@ class DoctorCard extends StatelessWidget {
                         child: Icon(
                           Icons.person_rounded,
                           size: 31.0,
-                          color: Color(0xFF0A7E8C),
+                          color: DesignTokens.primary,
                         ),
                       ),
               ),
             ),
-            const SizedBox(width: 12.0),
+            const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
 
             // Middle Content (Expanded Column)
             Expanded(
@@ -113,48 +112,47 @@ class DoctorCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           doctor.name,
-                          style: GoogleFonts.inter(
-                            fontSize: 16.0,
+                          style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1F2937),
+                            color: DesignTokens.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 8.0),
+                      const SizedBox(width: DesignTokens.sm),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 4.0,
+                          horizontal: DesignTokens.sm,
+                          vertical: DesignTokens.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFECFDF5),
-                          borderRadius: BorderRadius.circular(12.0),
+                          color: DesignTokens.successBackground,
+                          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               ratingStr,
-                              style: GoogleFonts.inter(
+                              style: theme.textTheme.bodySmall?.copyWith(
                                 fontSize: 10.0,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF047857),
+                                color: DesignTokens.success,
                               ),
                             ),
                             const SizedBox(width: 2.0),
                             const Icon(
                               Icons.star_rounded,
                               size: 14.0,
-                              color: Color(0xFFF59E0B),
+                              color: DesignTokens.starRating,
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8.0),
+                  const SizedBox(height: DesignTokens.sm),
 
                   // B. Stats Row (Experience, Distance, Address)
                   Row(
@@ -163,43 +161,43 @@ class DoctorCard extends StatelessWidget {
                       const Icon(
                         Icons.work_outline,
                         size: 14.0,
-                        color: Color(0xFF6B7280),
+                        color: DesignTokens.textSecondary,
                       ),
-                      const SizedBox(width: 4.0),
+                      const SizedBox(width: DesignTokens.xs),
                       Text(
                         experienceStr,
-                        style: GoogleFonts.inter(
+                        style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 10.0,
-                          color: const Color(0xFF4B5563),
+                          color: DesignTokens.textSecondary,
                         ),
                       ),
-                      const SizedBox(width: 12.0),
+                      const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
                       const Icon(
                         Icons.location_on_outlined,
                         size: 14.0,
-                        color: Color(0xFF6B7280),
+                        color: DesignTokens.textSecondary,
                       ),
-                      const SizedBox(width: 4.0),
+                      const SizedBox(width: DesignTokens.xs),
                       Text(
                         distanceStr,
-                        style: GoogleFonts.inter(
+                        style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 10.0,
-                          color: const Color(0xFF4B5563),
+                          color: DesignTokens.textSecondary,
                         ),
                       ),
-                      const SizedBox(width: 12.0),
+                      const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
                       const Icon(
                         Icons.location_city_outlined,
                         size: 14.0,
-                        color: Color(0xFF6B7280),
+                        color: DesignTokens.textSecondary,
                       ),
-                      const SizedBox(width: 4.0),
+                      const SizedBox(width: DesignTokens.xs),
                       Expanded(
                         child: Text(
                           addressStr,
-                          style: GoogleFonts.inter(
+                          style: theme.textTheme.bodySmall?.copyWith(
                             fontSize: 10.0,
-                            color: const Color(0xFF4B5563),
+                            color: DesignTokens.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -218,14 +216,14 @@ class DoctorCard extends StatelessWidget {
                           const Icon(
                             Icons.access_time_rounded,
                             size: 14.0,
-                            color: Color(0xFF6B7280),
+                            color: DesignTokens.textSecondary,
                           ),
-                          const SizedBox(width: 4.0),
+                          const SizedBox(width: DesignTokens.xs),
                           Text(
                             hoursStr,
-                            style: GoogleFonts.inter(
+                            style: theme.textTheme.bodySmall?.copyWith(
                               fontSize: 10.0,
-                              color: const Color(0xFF4B5563),
+                              color: DesignTokens.textSecondary,
                             ),
                           ),
                         ],
@@ -233,23 +231,24 @@ class DoctorCard extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () => context.push('/doctor/${doctor.id}'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEF4444),
+                          backgroundColor: DesignTokens.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 4.0,
+                            horizontal: DesignTokens.md,
+                            vertical: DesignTokens.xs,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
+                            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                           ),
                           elevation: 0,
                           minimumSize: const Size(0, 28.0),
                         ),
                         child: Text(
                           'Book Seat',
-                          style: GoogleFonts.inter(
+                          style: theme.textTheme.bodySmall?.copyWith(
                             fontSize: 12.0,
                             fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -264,6 +263,3 @@ class DoctorCard extends StatelessWidget {
     );
   }
 }
-
-
-
