@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:doctorly/features/doctor/data/repositories/reports_repository.dart';
 import 'package:doctorly/services/logger.dart';
-import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/utils/error_localizer.dart';
 
@@ -82,7 +81,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.textPrimary,
+            backgroundColor: DesignTokens.textPrimary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
@@ -102,7 +101,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.error,
+            backgroundColor: DesignTokens.error,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
@@ -139,7 +138,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.divider,
+                  color: DesignTokens.divider,
                   borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 4),
                 ),
               ),
@@ -149,7 +148,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
               children: [
                 const Icon(
                   Icons.flag_outlined,
-                  color: AppColors.error,
+                  color: DesignTokens.error,
                   size: 24,
                 ),
                 const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
@@ -158,7 +157,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                     'Report ${widget.doctorName}',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: DesignTokens.textPrimary,
                         ),
                   ),
                 ),
@@ -168,7 +167,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
             Text(
               'Please select a reason for reporting this profile. Your report will be reviewed by our moderation team.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: DesignTokens.textSecondary,
                     height: 1.4,
                   ),
             ),
@@ -194,8 +193,8 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                             ? Icons.radio_button_checked
                             : Icons.radio_button_off,
                         color: isSelected
-                            ? AppColors.primary
-                            : AppColors.inactiveIcon,
+                            ? DesignTokens.primary
+                            : DesignTokens.textSecondary,
                         size: 22,
                       ),
                       const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
@@ -205,7 +204,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                               fontWeight: isSelected
                                   ? FontWeight.w600
                                   : FontWeight.w400,
-                              color: AppColors.textPrimary,
+                              color: DesignTokens.textPrimary,
                             ),
                       ),
                     ],
@@ -218,7 +217,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
               'Additional Details (Optional)',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: DesignTokens.textPrimary,
                   ),
             ),
             const SizedBox(height: DesignTokens.sm),
@@ -228,15 +227,15 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
               maxLength: 500,
               maxLines: 3,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: DesignTokens.textPrimary,
                   ),
               decoration: InputDecoration(
                 hintText: 'Provide any additional context or details...',
                 hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textHint,
+                      color: DesignTokens.textSecondary,
                     ),
                 filled: true,
-                fillColor: AppColors.background,
+                fillColor: DesignTokens.scaffoldBackground,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   borderSide: BorderSide.none,
@@ -244,7 +243,7 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   borderSide: const BorderSide(
-                    color: AppColors.primary,
+                    color: DesignTokens.primary,
                     width: 1.5,
                   ),
                 ),
@@ -256,9 +255,9 @@ class _ReportDoctorSheetState extends ConsumerState<ReportDoctorSheet> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitReport,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: DesignTokens.primary,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.primary.withValues(
+                  disabledBackgroundColor: DesignTokens.primary.withValues(
                     alpha: 0.5,
                   ),
                   elevation: 0,

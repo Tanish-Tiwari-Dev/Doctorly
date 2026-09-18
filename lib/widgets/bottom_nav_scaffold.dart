@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:doctorly/config/app_features.dart';
 import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
-import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/widgets/offline_banner.dart';
 
@@ -23,7 +23,7 @@ class BottomNavScaffold extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.textPrimary,
+            backgroundColor: DesignTokens.textPrimary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -49,11 +49,12 @@ class BottomNavScaffold extends ConsumerWidget {
         icon: Icons.favorite_border_rounded,
         activeIcon: Icons.favorite_rounded,
       ),
-      (
-        label: 'Appointments',
-        icon: Icons.calendar_today_outlined,
-        activeIcon: Icons.calendar_month_rounded,
-      ),
+      if (AppFeatures.showBooking)
+        (
+          label: 'Appointments',
+          icon: Icons.calendar_today_outlined,
+          activeIcon: Icons.calendar_month_rounded,
+        ),
     ];
 
     return LayoutBuilder(
@@ -130,7 +131,7 @@ class BottomNavScaffold extends ConsumerWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.textPrimary.withValues(alpha: 0.06),
+                  color: DesignTokens.textPrimary.withValues(alpha: 0.06),
                   blurRadius: 15,
                   offset: const Offset(0, -4),
                 ),
@@ -217,7 +218,7 @@ class _MergeProgressBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.primary,
+      color: DesignTokens.primary,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SafeArea(
         bottom: false,

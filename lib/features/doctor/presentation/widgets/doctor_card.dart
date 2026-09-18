@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:doctorly/features/doctor/domain/models/doctor.dart';
+import 'package:doctorly/features/doctor/presentation/widgets/verified_badge.dart';
+import 'package:doctorly/utils/availability_checker.dart';
 import 'package:doctorly/utils/design_tokens.dart';
 
-/// A card widget displaying doctor information matching exact Figma layout specifications.
+/// A card widget displaying doctor information with hospital and district/city details,
+/// verification badges, and an OPD availability status pill.
 class DoctorCard extends StatelessWidget {
   /// Creates a [DoctorCard] instance.
   const DoctorCard({
@@ -38,14 +41,53 @@ class DoctorCard extends StatelessWidget {
         ? '${doctor.distanceKm.toStringAsFixed(1)} KM'
         : '2.5 KM';
 
-    final String addressStr = (doctor.address != null && doctor.address!.isNotEmpty)
-        ? doctor.address!
-        : '123 Colony, Yerwada';
+    // Rich OPD availability calculation
+    final availabilityInfo = calculateDoctorAvailability(
+      opdDays: doctor.opdDays,
+      opdOpen: doctor.opdOpen ?? doctor.openingTime,
+      opdClose: doctor.opdClose ?? doctor.closingTime,
+      opdByAppointment: doctor.opdByAppointment,
+    );
 
-    final String hoursStr =
-        (doctor.openingTime.isNotEmpty && doctor.closingTime.isNotEmpty)
-            ? '${doctor.openingTime} - ${doctor.closingTime}'
-            : '10 AM - 10 PM';
+    // Color and icon for OPD pill
+    final Color opdColor;
+    final Color opdBackground;
+    final IconData opdIcon;
+
+    switch (availabilityInfo.status) {
+      case DoctorOpdStatus.openNow:
+        opdColor = DesignTokens.success;
+        opdBackground = DesignTokens.successBackground;
+        opdIcon = Icons.check_circle_outline_rounded;
+      case DoctorOpdStatus.opensAt:
+        opdColor = DesignTokens.primary;
+        opdBackground = DesignTokens.primaryLight;
+        opdIcon = Icons.access_time_rounded;
+      case DoctorOpdStatus.byAppointmentOnly:
+        opdColor = DesignTokens.secondary;
+        opdBackground = DesignTokens.primaryLight;
+        opdIcon = Icons.calendar_month_outlined;
+      case DoctorOpdStatus.closedToday:
+        opdColor = DesignTokens.error;
+        opdBackground = DesignTokens.errorBackground;
+        opdIcon = Icons.do_not_disturb_on_outlined;
+      case DoctorOpdStatus.callToConfirm:
+        opdColor = DesignTokens.textSecondary;
+        opdBackground = DesignTokens.inputBackground;
+        opdIcon = Icons.phone_outlined;
+    }
+
+    // Hospital + City / District line
+    final String locationLine = [
+      if (doctor.hospitalName != null && doctor.hospitalName!.isNotEmpty)
+        doctor.hospitalName!,
+      if (doctor.district != null && doctor.district!.isNotEmpty)
+        doctor.district!
+      else if (doctor.city != null && doctor.city!.isNotEmpty)
+        doctor.city!
+      else if (doctor.address != null && doctor.address!.isNotEmpty)
+        doctor.address!,
+    ].join(' • ');
 
     return GestureDetector(
       onTap: () => context.push('/doctor/${doctor.id}'),
@@ -105,22 +147,35 @@ class DoctorCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // A. Top Row (Name + Rating)
+                  // A. Top Row (Name + Verification + Rating)
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(
-                          doctor.name,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: DesignTokens.textPrimary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                doctor.name,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: DesignTokens.textPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (doctor.isFullyVerified) ...[
+                              const SizedBox(width: DesignTokens.xs),
+                              const VerifiedBadge(compact: true),
+                            ] else if (doctor.isPartiallyVerified) ...[
+                              const SizedBox(width: DesignTokens.xs),
+                              const VerifiedBadge(compact: true, partiallyVerified: true),
+                            ],
+                          ],
                         ),
                       ),
-                      const SizedBox(width: DesignTokens.sm),
+                      const SizedBox(width: DesignTokens.xs),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: DesignTokens.sm,
@@ -152,9 +207,25 @@ class DoctorCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: DesignTokens.sm),
 
-                  // B. Stats Row (Experience, Distance, Address)
+                  // Hospital + District / City line
+                  if (locationLine.isNotEmpty) ...[
+                    const SizedBox(height: DesignTokens.xs / 2),
+                    Text(
+                      locationLine,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 11.0,
+                        fontWeight: FontWeight.w500,
+                        color: DesignTokens.primary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+
+                  const SizedBox(height: DesignTokens.xs),
+
+                  // B. Stats Row (Experience, Distance)
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -185,49 +256,50 @@ class DoctorCard extends StatelessWidget {
                           color: DesignTokens.textSecondary,
                         ),
                       ),
-                      const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
-                      const Icon(
-                        Icons.location_city_outlined,
-                        size: 14.0,
-                        color: DesignTokens.textSecondary,
-                      ),
-                      const SizedBox(width: DesignTokens.xs),
-                      Expanded(
-                        child: Text(
-                          addressStr,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontSize: 10.0,
-                            color: DesignTokens.textSecondary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
                     ],
                   ),
-                  const SizedBox(height: 10.0),
+                  const SizedBox(height: DesignTokens.sm),
 
-                  // C. Hours & Book Button Row
+                  // C. OPD Availability Pill & View Profile Button Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.access_time_rounded,
-                            size: 14.0,
-                            color: DesignTokens.textSecondary,
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: DesignTokens.sm,
+                            vertical: DesignTokens.xs / 2,
                           ),
-                          const SizedBox(width: DesignTokens.xs),
-                          Text(
-                            hoursStr,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontSize: 10.0,
-                              color: DesignTokens.textSecondary,
-                            ),
+                          decoration: BoxDecoration(
+                            color: opdBackground,
+                            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                           ),
-                        ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                opdIcon,
+                                size: 13.0,
+                                color: opdColor,
+                              ),
+                              const SizedBox(width: DesignTokens.xs),
+                              Flexible(
+                                child: Text(
+                                  availabilityInfo.label,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: opdColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
+                      const SizedBox(width: DesignTokens.xs),
                       ElevatedButton(
                         onPressed: () => context.push('/doctor/${doctor.id}'),
                         style: ElevatedButton.styleFrom(
@@ -244,7 +316,7 @@ class DoctorCard extends StatelessWidget {
                           minimumSize: const Size(0, 28.0),
                         ),
                         child: Text(
-                          'Book Seat',
+                          'View Profile',
                           style: theme.textTheme.bodySmall?.copyWith(
                             fontSize: 12.0,
                             fontWeight: FontWeight.bold,

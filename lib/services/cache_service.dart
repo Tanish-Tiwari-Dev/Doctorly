@@ -12,6 +12,12 @@ class CacheService {
 
   static const String doctorsBoxName = 'doctors_cache';
   static const String doctorsKey = 'cached_doctors_list';
+  static const String cacheVersionKey = 'cache_schema_version';
+
+  /// Current schema version for doctor cache. Increment when doctor model or schema changes.
+  // ignore: constant_identifier_names
+  static const int CACHE_SCHEMA_VERSION = 3;
+  static const int cacheSchemaVersion = CACHE_SCHEMA_VERSION;
 
   bool _isInitialized = false;
 
@@ -27,25 +33,37 @@ class CacheService {
     }
   }
 
-  /// Caches a list of doctor objects represented as Maps.
+  /// Caches a list of doctor objects represented as Maps stamped with current schema version.
   Future<void> cacheDoctors(List<Map<String, dynamic>> doctors) async {
     if (!_isInitialized) await initialize();
     try {
-      final box = await Hive.openBox<String>(doctorsBoxName);
+      final box = await Hive.openBox<dynamic>(doctorsBoxName);
       final jsonString = jsonEncode(doctors);
       await box.put(doctorsKey, jsonString);
-      LoggerService.instance.log.info('Cached ${doctors.length} doctors in Hive');
+      await box.put(cacheVersionKey, cacheSchemaVersion);
+      LoggerService.instance.log.info('Cached ${doctors.length} doctors in Hive (v$cacheSchemaVersion)');
     } catch (e, st) {
       LoggerService.instance.log.severe('Failed to cache doctors in Hive', e, st);
     }
   }
 
-  /// Retrieves the cached doctor listings, or `null` if no cache exists.
+  /// Retrieves the cached doctor listings, or `null` if no cache exists or version is mismatched.
   Future<List<Map<String, dynamic>>?> getCachedDoctors() async {
     if (!_isInitialized) await initialize();
     try {
-      final box = await Hive.openBox<String>(doctorsBoxName);
-      final jsonString = box.get(doctorsKey);
+      final box = await Hive.openBox<dynamic>(doctorsBoxName);
+
+      final version = box.get(cacheVersionKey);
+      if (version == null || version != cacheSchemaVersion) {
+        LoggerService.instance.log.warning(
+          'Cache schema version mismatch or absent (found: $version, expected: $cacheSchemaVersion). Clearing cache.',
+        );
+        await box.clear();
+        return null;
+      }
+
+      final dynamic raw = box.get(doctorsKey);
+      final jsonString = raw is String ? raw : null;
       if (jsonString == null || jsonString.isEmpty) {
         return null;
       }
@@ -61,7 +79,7 @@ class CacheService {
   Future<void> clearCache() async {
     if (!_isInitialized) await initialize();
     try {
-      final box = await Hive.openBox<String>(doctorsBoxName);
+      final box = await Hive.openBox<dynamic>(doctorsBoxName);
       await box.clear();
       LoggerService.instance.log.info('Cleared doctor cache');
     } catch (e, st) {

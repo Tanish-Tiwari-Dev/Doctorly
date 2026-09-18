@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:doctorly/features/doctor/data/repositories/reviews_repository.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
 import 'package:doctorly/services/logger.dart';
-import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/utils/error_localizer.dart';
 
@@ -84,7 +83,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.textPrimary,
+            backgroundColor: DesignTokens.textPrimary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
@@ -104,7 +103,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.error,
+            backgroundColor: DesignTokens.error,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
@@ -141,7 +140,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.divider,
+                  color: DesignTokens.divider,
                   borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 4),
                 ),
               ),
@@ -151,7 +150,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
               children: [
                 const Icon(
                   Icons.rate_review_outlined,
-                  color: AppColors.primary,
+                  color: DesignTokens.primary,
                   size: 24,
                 ),
                 const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
@@ -160,7 +159,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                     'Review ${widget.doctorName}',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: DesignTokens.textPrimary,
                         ),
                   ),
                 ),
@@ -170,7 +169,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
             Text(
               'Share your experience to help other patients find the best care.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: DesignTokens.textSecondary,
                     height: 1.4,
                   ),
             ),
@@ -180,7 +179,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                 'Tap to Rate',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: DesignTokens.textPrimary,
                     ),
               ),
             ),
@@ -197,7 +196,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                       : () => setState(() => _rating = starValue),
                   icon: Icon(
                     isFilled ? Icons.star : Icons.star_border,
-                    color: isFilled ? AppColors.warning : AppColors.inactiveIcon,
+                    color: isFilled ? DesignTokens.starRating : DesignTokens.textSecondary,
                   ),
                 );
               }),
@@ -207,7 +206,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
               'Your Comment (Optional)',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: DesignTokens.textPrimary,
                   ),
             ),
             const SizedBox(height: DesignTokens.sm),
@@ -217,15 +216,15 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
               maxLength: 500,
               maxLines: 4,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: DesignTokens.textPrimary,
                   ),
               decoration: InputDecoration(
                 hintText: 'Write your experience with ${widget.doctorName}...',
                 hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textHint,
+                      color: DesignTokens.textSecondary,
                     ),
                 filled: true,
-                fillColor: AppColors.background,
+                fillColor: DesignTokens.inputBackground,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   borderSide: BorderSide.none,
@@ -233,7 +232,7 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
                   borderSide: const BorderSide(
-                    color: AppColors.primary,
+                    color: DesignTokens.primary,
                     width: 1.5,
                   ),
                 ),
@@ -245,9 +244,9 @@ class _LeaveReviewSheetState extends ConsumerState<LeaveReviewSheet> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitReview,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: DesignTokens.primary,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.primary.withValues(
+                  disabledBackgroundColor: DesignTokens.primary.withValues(
                     alpha: 0.5,
                   ),
                   elevation: 0,

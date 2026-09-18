@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:doctorly/features/doctor/domain/models/doctor.dart';
-import 'package:doctorly/features/doctor/domain/models/specialty.dart';
 import 'package:doctorly/features/doctor/data/repositories/doctors_repository.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_filter_provider.dart';
 import 'package:doctorly/utils/availability_checker.dart';
+import 'package:doctorly/utils/disha_categories.dart';
 import 'package:doctorly/utils/error_localizer.dart';
 import 'package:doctorly/utils/repository_exception.dart';
 
@@ -55,21 +55,19 @@ final topRatedDoctorsProvider = FutureProvider.autoDispose<List<Doctor>>((ref) a
   return await repo.fetchTopRated(minRating: 4.5, limit: 10);
 });
 
-/// State provider holding the currently selected specialty filter chip.
-final selectedSpecialtyProvider = StateProvider<Specialty?>((ref) => null);
+/// State provider holding the currently selected Disha patient-facing category slug.
+final selectedCategoryProvider = StateProvider<String?>((ref) => null);
 
 /// State provider holding optional nearby location search results.
 final nearbyResultsProvider = StateProvider<List<Doctor>?>((ref) => null);
 
-/// Notifier managing debounced search query input string.
+/// Notifier handling debounced query changes for doctor searches.
 class SearchQueryNotifier extends Notifier<String> {
   Timer? _debounce;
 
   @override
   String build() {
-    ref.onDispose(() {
-      _debounce?.cancel();
-    });
+    ref.onDispose(() => _debounce?.cancel());
     return '';
   }
 
@@ -87,12 +85,12 @@ final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
   SearchQueryNotifier.new,
 );
 
-/// Derived provider filtering doctor listing by search query, specialty, rating, and distance.
+/// Derived provider filtering doctor listing by search query, rating, distance, district, and Disha category.
 final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
   final filter = ref.watch(doctorFilterProvider);
   final nearby = ref.watch(nearbyResultsProvider);
   final query = ref.watch(searchQueryProvider).trim().toLowerCase();
-  final specialtyChip = ref.watch(selectedSpecialtyProvider);
+  final selectedCategory = ref.watch(selectedCategoryProvider);
 
   final sourceList =
       nearby ?? ref.watch(doctorListProvider).valueOrNull ?? const [];
@@ -105,16 +103,24 @@ final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
   return sorted.where((doctor) {
     final matchQuery = query.isEmpty ||
         doctor.name.toLowerCase().contains(query) ||
-        doctor.specialty.toLowerCase().contains(query);
+        doctor.specialty.toLowerCase().contains(query) ||
+        (doctor.hospitalName?.toLowerCase().contains(query) ?? false) ||
+        (doctor.district?.toLowerCase().contains(query) ?? false) ||
+        (doctor.city?.toLowerCase().contains(query) ?? false);
 
-    final matchSpecialtyChip =
-        specialtyChip == null || doctor.specialty == specialtyChip.label;
+    final matchCategory = selectedCategory == null ||
+        doctorMatchesCategory(doctor, selectedCategory);
 
     final matchFilterRating = doctor.rating >= filter.minRating;
 
     final matchFilterSpecialty = filter.specialty == null ||
         filter.specialty!.isEmpty ||
         doctor.specialty == filter.specialty;
+
+    final matchFilterDistrict = filter.district == null ||
+        filter.district!.isEmpty ||
+        (doctor.district != null &&
+            doctor.district!.toLowerCase() == filter.district!.toLowerCase());
 
     final matchFilterDistance = filter.maxDistanceKm >= 50 ||
         (doctor.distanceKm > 0 && doctor.distanceKm <= filter.maxDistanceKm) ||
@@ -124,13 +130,15 @@ final filteredDoctorsProvider = Provider<List<Doctor>>((ref) {
         isDoctorOpen(doctor.openingTime, doctor.closingTime);
 
     return matchQuery &&
-        matchSpecialtyChip &&
+        matchCategory &&
         matchFilterRating &&
         matchFilterSpecialty &&
+        matchFilterDistrict &&
         matchFilterDistance &&
         matchOpenNow;
   }).toList();
 });
+
 
 /// Record parameter type for similar doctors query.
 typedef SimilarDoctorsParams = ({String doctorId, String specialty});

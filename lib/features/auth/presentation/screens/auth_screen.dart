@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
-import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -83,7 +83,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.textPrimary,
+        backgroundColor: DesignTokens.textPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Text(
           message,
@@ -162,8 +162,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              AppColors.primary,
-                              AppColors.gradientSecondary,
+                              DesignTokens.primary,
+                              DesignTokens.secondary,
                             ],
                           ),
                         ),
@@ -179,7 +179,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                               fontSize: 30,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.primary,
+                              color: DesignTokens.primary,
                               letterSpacing: -0.5,
                             ),
                       ),
@@ -270,9 +270,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             child: ElevatedButton(
               onPressed: isBusy ? null : _sendOtp,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: DesignTokens.primary,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: AppColors.primary.withValues(
+                disabledBackgroundColor: DesignTokens.primary.withValues(
                   alpha: 0.5,
                 ),
                 elevation: 0,
@@ -304,7 +304,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ? null
                   : () => _showAccountRecoveryDialog(context),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
+                foregroundColor: DesignTokens.primary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 4,
@@ -315,7 +315,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: DesignTokens.primary,
                     ),
               ),
             ),
@@ -342,8 +342,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             child: OutlinedButton(
               onPressed: isBusy ? null : _signInWithGoogle,
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.textPrimary,
-                side: const BorderSide(color: AppColors.divider),
+                foregroundColor: DesignTokens.textPrimary,
+                side: const BorderSide(color: DesignTokens.divider),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
@@ -355,7 +355,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       child: CircularProgressIndicator(
                         strokeWidth: 2.4,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.primary,
+                          DesignTokens.primary,
                         ),
                       ),
                     )
@@ -382,7 +382,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ? null
                   : () => ref.read(authProvider.notifier).enterGuestMode(),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
+                foregroundColor: DesignTokens.textSecondary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
@@ -394,7 +394,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       child: CircularProgressIndicator(
                         strokeWidth: 2.4,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.textSecondary,
+                          DesignTokens.textSecondary,
                         ),
                       ),
                     )
@@ -446,7 +446,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 text: emailForOtp,
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: DesignTokens.textPrimary,
                 ),
               ),
             ],
@@ -461,7 +461,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ref.read(authProvider.notifier).resetOtpStep();
             },
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
+              foregroundColor: DesignTokens.primary,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             ),
             child: Text(
@@ -469,7 +469,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+                    color: DesignTokens.primary,
                   ),
             ),
           ),
@@ -490,9 +490,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           child: ElevatedButton(
             onPressed: (isVerifyingOtp || !hasCompleteCode) ? null : _verifyOtp,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: DesignTokens.primary,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
+              disabledBackgroundColor: DesignTokens.primary.withValues(alpha: 0.5),
               elevation: 0,
               shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
@@ -520,8 +520,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           child: TextButton(
             onPressed: _canResend ? _resendOtp : null,
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              disabledForegroundColor: AppColors.textSecondary.withValues(
+              foregroundColor: DesignTokens.primary,
+              disabledForegroundColor: DesignTokens.textSecondary.withValues(
                 alpha: 0.6,
               ),
             ),
@@ -619,14 +619,14 @@ class _OtpPinInputWidgetState extends State<_OtpPinInputWidget> {
                       right: index == 7 ? 0 : 2.5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.background,
+                      color: DesignTokens.scaffoldBackground,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isFocused
-                            ? AppColors.primary
+                            ? DesignTokens.primary
                             : (digit.isNotEmpty
-                                  ? AppColors.textPrimary
-                                  : AppColors.divider),
+                                  ? DesignTokens.textPrimary
+                                  : DesignTokens.divider),
                         width: isFocused ? 2.0 : 1.0,
                       ),
                     ),
@@ -638,7 +638,7 @@ class _OtpPinInputWidgetState extends State<_OtpPinInputWidget> {
                             digit,
                             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: DesignTokens.textPrimary,
                                 ),
                           ),
                         ),
@@ -685,7 +685,7 @@ class _PillTextField extends StatelessWidget {
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: DesignTokens.textPrimary,
                 ),
           ),
         ),
@@ -696,22 +696,22 @@ class _PillTextField extends StatelessWidget {
           validator: validator,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
+                color: DesignTokens.textPrimary,
               ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textHint,
+                  color: DesignTokens.textSecondary,
                 ),
             filled: true,
-            fillColor: AppColors.background,
+            fillColor: DesignTokens.scaffoldBackground,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 20,
               vertical: 18,
             ),
             prefixIcon: Padding(
               padding: const EdgeInsets.only(left: 16, right: 8),
-              child: Icon(prefixIcon, size: 20, color: AppColors.textSecondary),
+              child: Icon(prefixIcon, size: 20, color: DesignTokens.textSecondary),
             ),
             prefixIconConstraints: const BoxConstraints(
               minWidth: 0,
@@ -728,21 +728,21 @@ class _PillTextField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(28),
               borderSide: const BorderSide(
-                color: AppColors.primary,
+                color: DesignTokens.primary,
                 width: 1.5,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(28),
-              borderSide: const BorderSide(color: AppColors.error, width: 1),
+              borderSide: const BorderSide(color: DesignTokens.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(28),
-              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+              borderSide: const BorderSide(color: DesignTokens.error, width: 1.5),
             ),
             errorStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: AppColors.error,
+                  color: DesignTokens.error,
                 ),
           ),
         ),
@@ -798,7 +798,7 @@ class __AccountRecoveryDialogState
         style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: DesignTokens.textPrimary,
             ),
       ),
       content: SingleChildScrollView(
@@ -853,12 +853,12 @@ class __AccountRecoveryDialogState
               child: TextButton(
                 onPressed: isSendingOtp ? null : () => Navigator.pop(context),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.textSecondary,
+                  foregroundColor: DesignTokens.textSecondary,
                 ),
                 child: Text(
                   'Cancel',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: DesignTokens.textSecondary,
                       ),
                 ),
               ),
@@ -881,9 +881,9 @@ class __AccountRecoveryDialogState
                           await widget.onSendOtp(email);
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: DesignTokens.primary,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.primary.withValues(
+                    disabledBackgroundColor: DesignTokens.primary.withValues(
                       alpha: 0.5,
                     ),
                     elevation: 0,

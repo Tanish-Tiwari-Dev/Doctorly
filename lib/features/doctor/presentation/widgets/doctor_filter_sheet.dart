@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:doctorly/features/doctor/domain/models/specialty.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_filter_provider.dart';
-import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
 
-/// Modal bottom sheet widget for setting doctor search filters.
+/// Modal bottom sheet widget for setting doctor search filters (Rating, Distance, District).
 class DoctorFilterSheet extends ConsumerStatefulWidget {
   /// Creates a [DoctorFilterSheet] instance.
   const DoctorFilterSheet({super.key});
@@ -33,8 +31,55 @@ class DoctorFilterSheet extends ConsumerStatefulWidget {
 class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
   late double _minRating;
   late int _maxDistanceKm;
-  String? _selectedSpecialty;
+  String? _selectedDistrict;
   late bool _openNowOnly;
+
+  static const List<String> _districts = [
+    'Ahmedabad',
+    'Amreli',
+    'Anand',
+    'Aravalli',
+    'Banaskantha',
+    'Bharuch',
+    'Bhavnagar',
+    'Botad',
+    'Chhota Udaipur',
+    'Dahod',
+    'Dang',
+    'Devbhoomi Dwarka',
+    'Gandhinagar',
+    'Gir Somnath',
+    'Jamnagar',
+    'Junagadh',
+    'Kheda',
+    'Kutch',
+    'Mahisagar',
+    'Mehsana',
+    'Morbi',
+    'Narmada',
+    'Navsari',
+    'Panchmahal',
+    'Patan',
+    'Porbandar',
+    'Rajkot',
+    'Sabarkantha',
+    'Surat',
+    'Surendranagar',
+    'Tapi',
+    'Vadodara',
+    'Valsad',
+    'Central Delhi',
+    'East Delhi',
+    'New Delhi',
+    'North Delhi',
+    'North East Delhi',
+    'North West Delhi',
+    'Shahdara',
+    'South Delhi',
+    'South East Delhi',
+    'South West Delhi',
+    'West Delhi',
+  ];
 
   @override
   void initState() {
@@ -42,7 +87,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
     final filter = ref.read(doctorFilterProvider);
     _minRating = filter.minRating.clamp(1.0, 5.0);
     _maxDistanceKm = filter.maxDistanceKm;
-    _selectedSpecialty = filter.specialty;
+    _selectedDistrict = filter.district;
     _openNowOnly = filter.openNowOnly;
   }
 
@@ -50,7 +95,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
     setState(() {
       _minRating = 1.0;
       _maxDistanceKm = 50;
-      _selectedSpecialty = null;
+      _selectedDistrict = null;
       _openNowOnly = false;
     });
     ref.read(doctorFilterProvider.notifier).reset();
@@ -61,7 +106,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
     final updatedFilter = DoctorFilter(
       minRating: _minRating == 1.0 ? 0.0 : _minRating,
       maxDistanceKm: _maxDistanceKm,
-      specialty: _selectedSpecialty,
+      district: _selectedDistrict,
       openNowOnly: _openNowOnly,
     );
     ref.read(doctorFilterProvider.notifier).setFilter(updatedFilter);
@@ -89,7 +134,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.divider,
+                  color: DesignTokens.divider,
                   borderRadius: BorderRadius.circular(DesignTokens.radiusSmall / 4),
                 ),
               ),
@@ -102,7 +147,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                   children: [
                     const Icon(
                       Icons.filter_list,
-                      color: AppColors.primary,
+                      color: DesignTokens.primary,
                       size: 24,
                     ),
                     const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
@@ -110,7 +155,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                       'Filter Doctors',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: DesignTokens.textPrimary,
                           ),
                     ),
                   ],
@@ -120,7 +165,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                   child: Text(
                     'Reset',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.error,
+                          color: DesignTokens.error,
                           fontWeight: FontWeight.w600,
                         ),
                   ),
@@ -137,14 +182,14 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                   'Minimum Rating',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: DesignTokens.textPrimary,
                       ),
                 ),
                 Row(
                   children: [
                     const Icon(
                       Icons.star,
-                      color: AppColors.warning,
+                      color: DesignTokens.starRating,
                       size: 18,
                     ),
                     const SizedBox(width: DesignTokens.xs),
@@ -152,7 +197,7 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                       '${_minRating.toStringAsFixed(1)}+ Stars',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: DesignTokens.textPrimary,
                           ),
                     ),
                   ],
@@ -164,8 +209,8 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
               min: 1.0,
               max: 5.0,
               divisions: 8,
-              activeColor: AppColors.primary,
-              inactiveColor: AppColors.divider,
+              activeColor: DesignTokens.primary,
+              inactiveColor: DesignTokens.divider,
               label: '${_minRating.toStringAsFixed(1)} ★',
               onChanged: (val) {
                 setState(() => _minRating = val);
@@ -181,14 +226,14 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                   'Maximum Distance',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: DesignTokens.textPrimary,
                       ),
                 ),
                 Text(
                   'Within $_maxDistanceKm km',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: DesignTokens.textPrimary,
                       ),
                 ),
               ],
@@ -198,8 +243,8 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
               min: 1.0,
               max: 50.0,
               divisions: 49,
-              activeColor: AppColors.primary,
-              inactiveColor: AppColors.divider,
+              activeColor: DesignTokens.primary,
+              inactiveColor: DesignTokens.divider,
               label: '$_maxDistanceKm km',
               onChanged: (val) {
                 setState(() => _maxDistanceKm = val.round());
@@ -207,12 +252,12 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
             ),
             const SizedBox(height: DesignTokens.md),
 
-            // Specialty Dropdown
+            // District Filter Dropdown
             Text(
-              'Specialty',
+              'District',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: DesignTokens.textPrimary,
                   ),
             ),
             const SizedBox(height: DesignTokens.sm),
@@ -221,88 +266,104 @@ class _DoctorFilterSheetState extends ConsumerState<DoctorFilterSheet> {
                 horizontal: DesignTokens.sm + DesignTokens.xs,
               ),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: DesignTokens.inputBackground,
                 borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String?>(
-                  value: _selectedSpecialty,
+                  value: _selectedDistrict,
                   isExpanded: true,
                   hint: Text(
-                    'All Specialties',
+                    'All Districts',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
+                          color: DesignTokens.textSecondary,
                         ),
                   ),
                   icon: const Icon(
                     Icons.keyboard_arrow_down,
-                    color: AppColors.primary,
+                    color: DesignTokens.primary,
                   ),
                   items: [
                     const DropdownMenuItem<String?>(
                       value: null,
-                      child: Text('All Specialties'),
+                      child: Text('All Districts'),
                     ),
-                    ...Specialty.values.map((s) {
+                    ..._districts.map((d) {
                       return DropdownMenuItem<String?>(
-                        value: s.label,
-                        child: Text(s.label),
+                        value: d,
+                        child: Text(d),
                       );
                     }),
                   ],
                   onChanged: (val) {
-                    setState(() => _selectedSpecialty = val);
+                    setState(() => _selectedDistrict = val);
                   },
                 ),
               ),
             ),
             const SizedBox(height: DesignTokens.md),
 
-            // Open Now Only Switch
-            Material(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
-              child: SwitchListTile(
-                value: _openNowOnly,
-                activeThumbColor: AppColors.primary,
-                title: Text(
-                  'Open Now Only',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+            // Open Now Switch
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: DesignTokens.sm + DesignTokens.xs,
+                vertical: DesignTokens.xs,
+              ),
+              decoration: BoxDecoration(
+                color: DesignTokens.inputBackground,
+                borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.access_time_rounded,
+                        color: DesignTokens.primary,
+                        size: 20,
                       ),
-                ),
-                subtitle: Text(
-                  'Only show doctors currently open for appointments',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                      const SizedBox(width: DesignTokens.sm),
+                      Text(
+                        'Open Now Only',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: DesignTokens.textPrimary,
+                            ),
                       ),
-                ),
-                onChanged: (val) {
-                  setState(() => _openNowOnly = val);
-                },
+                    ],
+                  ),
+                  Switch.adaptive(
+                    value: _openNowOnly,
+                    activeTrackColor: DesignTokens.primary,
+                    onChanged: (val) {
+                      setState(() => _openNowOnly = val);
+                    },
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: DesignTokens.lg),
 
-            // Apply Filters Button
-            SizedBox(
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _applyFilters,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
-                  ),
-                  textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
+            // Apply Button
+            ElevatedButton(
+              onPressed: _applyFilters,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: DesignTokens.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  vertical: DesignTokens.sm + DesignTokens.xs,
                 ),
-                child: const Text('Apply Filters'),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusMedium),
+                ),
+              ),
+              child: Text(
+                'Apply Filters',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ),
           ],

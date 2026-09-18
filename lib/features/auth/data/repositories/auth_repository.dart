@@ -83,7 +83,7 @@ class AuthRepository {
   static const String googleWebClientId = String.fromEnvironment(
     'GOOGLE_WEB_CLIENT_ID',
     defaultValue:
-        '265663218425-l00agv3jvi9a0e5tlqvd0vc6e92ns9pj.apps.googleusercontent.com',
+        '265663218425-fejan26d8oq48qbq01uhj8tge0gkhqs5.apps.googleusercontent.com',
   );
 
   /// Signs in using Google OAuth flow via [GoogleSignIn].
@@ -100,7 +100,6 @@ class AuthRepository {
       }
       final auth = await account.authentication;
       final idToken = auth.idToken;
-      final accessToken = auth.accessToken;
       if (idToken == null || idToken.isEmpty) {
         throw const RepositoryException(
           RepositoryExceptionKind.unauthorized,
@@ -110,7 +109,6 @@ class AuthRepository {
       return await signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken,
-        accessToken: accessToken,
       );
     } on PlatformException catch (e) {
       if (e.code == 'sign_in_canceled' ||

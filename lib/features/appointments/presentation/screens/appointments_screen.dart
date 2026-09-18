@@ -6,7 +6,6 @@ import 'package:doctorly/features/appointments/domain/models/appointment.dart';
 import 'package:doctorly/features/appointments/presentation/providers/appointments_provider.dart';
 import 'package:doctorly/features/appointments/presentation/widgets/appointment_card_skeleton.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
-import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/widgets/empty_state.dart';
 
@@ -143,7 +142,7 @@ class _AppointmentCardState extends ConsumerState<_AppointmentCard> {
                   child: TextButton(
                     onPressed: _isCancelling ? null : _handleCancel,
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.error,
+                      foregroundColor: DesignTokens.error,
                     ),
                     child: _isCancelling
                         ? const SizedBox(
@@ -152,7 +151,7 @@ class _AppointmentCardState extends ConsumerState<_AppointmentCard> {
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.error,
+                                DesignTokens.error,
                               ),
                             ),
                           )
@@ -176,13 +175,13 @@ class _StatusChip extends StatelessWidget {
     Color color;
     switch (status) {
       case AppointmentStatus.confirmed:
-        color = AppColors.success;
+        color = DesignTokens.success;
         break;
       case AppointmentStatus.cancelled:
-        color = AppColors.textSecondary;
+        color = DesignTokens.textSecondary;
         break;
       case AppointmentStatus.pending:
-        color = AppColors.warning;
+        color = DesignTokens.warning;
         break;
     }
     return Chip(

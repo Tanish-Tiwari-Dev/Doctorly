@@ -6,7 +6,7 @@ import 'package:doctorly/features/doctor/presentation/widgets/doctor_filter_shee
 
 void main() {
   testWidgets(
-      'DoctorFilterSheet renders sliders, specialty dropdown, apply and reset buttons',
+      'DoctorFilterSheet renders sliders, district dropdown, apply and reset buttons',
       (WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -31,7 +31,8 @@ void main() {
     expect(find.text('Filter Doctors'), findsOneWidget);
     expect(find.text('Minimum Rating'), findsOneWidget);
     expect(find.text('Maximum Distance'), findsOneWidget);
-    expect(find.text('Specialty'), findsOneWidget);
+    expect(find.text('Specialty'), findsNothing);
+    expect(find.text('District'), findsOneWidget);
     expect(find.text('Apply Filters'), findsOneWidget);
     expect(find.text('Reset'), findsOneWidget);
     expect(find.byType(Slider), findsNWidgets(2));

@@ -74,6 +74,12 @@ abstract final class DesignTokens {
   /// Secondary / muted text (Slate 500).
   static const Color textSecondary = Color(0xFF64748B);
 
+  /// Secondary accent colour (Slate-Teal accent).
+  static const Color secondary = Color(0xFF0D9488);
+
+  /// Default background for avatar placeholders.
+  static const Color avatarBackground = Color(0xFFF1F5F9);
+
   // ──────────────────── Semantic / Status Colours ───────────────────
 
   /// Success / Open indicator (Soft Green).
@@ -87,6 +93,12 @@ abstract final class DesignTokens {
 
   /// Light background for error chips and banners.
   static const Color errorBackground = Color(0xFFFEF2F2);
+
+  /// Warning indicator (Warm Orange/Amber).
+  static const Color warning = Color(0xFFD97706);
+
+  /// Light background for warning chips and banners.
+  static const Color warningBackground = Color(0xFFFFFBEB);
 
   /// Star / rating colour (Warm Amber).
   static const Color starRating = Color(0xFFF59E0B);

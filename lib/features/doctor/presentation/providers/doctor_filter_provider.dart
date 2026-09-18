@@ -9,6 +9,7 @@ class DoctorFilter {
     this.minRating = 0.0,
     this.maxDistanceKm = 50,
     this.specialty,
+    this.district,
     this.openNowOnly = false,
   });
 
@@ -21,6 +22,9 @@ class DoctorFilter {
   /// Optional doctor specialty filter.
   final String? specialty;
 
+  /// Optional district filter.
+  final String? district;
+
   /// Filter doctors that are currently open.
   final bool openNowOnly;
 
@@ -29,6 +33,7 @@ class DoctorFilter {
       minRating <= 0.0 &&
       maxDistanceKm >= 50 &&
       specialty == null &&
+      district == null &&
       !openNowOnly;
 
   /// Creates a copy of [DoctorFilter] with modified parameters.
@@ -37,12 +42,15 @@ class DoctorFilter {
     int? maxDistanceKm,
     String? specialty,
     bool clearSpecialty = false,
+    String? district,
+    bool clearDistrict = false,
     bool? openNowOnly,
   }) {
     return DoctorFilter(
       minRating: minRating ?? this.minRating,
       maxDistanceKm: maxDistanceKm ?? this.maxDistanceKm,
       specialty: clearSpecialty ? null : (specialty ?? this.specialty),
+      district: clearDistrict ? null : (district ?? this.district),
       openNowOnly: openNowOnly ?? this.openNowOnly,
     );
   }
@@ -55,6 +63,7 @@ class DoctorFilter {
           minRating == other.minRating &&
           maxDistanceKm == other.maxDistanceKm &&
           specialty == other.specialty &&
+          district == other.district &&
           openNowOnly == other.openNowOnly;
 
   @override
@@ -62,11 +71,12 @@ class DoctorFilter {
       minRating.hashCode ^
       maxDistanceKm.hashCode ^
       specialty.hashCode ^
+      district.hashCode ^
       openNowOnly.hashCode;
 
   @override
   String toString() =>
-      'DoctorFilter(minRating: $minRating, maxDistanceKm: $maxDistanceKm, specialty: $specialty, openNowOnly: $openNowOnly)';
+      'DoctorFilter(minRating: $minRating, maxDistanceKm: $maxDistanceKm, specialty: $specialty, district: $district, openNowOnly: $openNowOnly)';
 }
 
 /// Notifier managing [DoctorFilter] state.
@@ -91,6 +101,14 @@ class DoctorFilterNotifier extends Notifier<DoctorFilter> {
     state = state.copyWith(
       specialty: specialty,
       clearSpecialty: specialty == null,
+    );
+  }
+
+  /// Sets or clears the district filter.
+  void setDistrict(String? district) {
+    state = state.copyWith(
+      district: district,
+      clearDistrict: district == null,
     );
   }
 

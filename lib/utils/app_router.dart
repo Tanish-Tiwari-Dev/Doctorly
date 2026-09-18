@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:doctorly/config/app_features.dart';
 import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
 import 'package:doctorly/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:doctorly/features/appointments/presentation/screens/appointments_screen.dart';
@@ -109,15 +110,16 @@ GoRouter buildAppRouter(ProviderContainer container) {
               ),
             ],
           ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/appointments',
-                name: 'appointments',
-                builder: (context, state) => const AppointmentsScreen(),
-              ),
-            ],
-          ),
+          if (AppFeatures.showBooking)
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/appointments',
+                  name: 'appointments',
+                  builder: (context, state) => const AppointmentsScreen(),
+                ),
+              ],
+            ),
         ],
       ),
       GoRoute(
@@ -129,15 +131,16 @@ GoRouter buildAppRouter(ProviderContainer container) {
           return DoctorDetailsScreen(id: id);
         },
       ),
-      GoRoute(
-        path: '/booking/:doctorId',
-        name: 'booking',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final doctorId = state.pathParameters['doctorId']!;
-          return BookingScreen(doctorId: doctorId);
-        },
-      ),
+      if (AppFeatures.showBooking)
+        GoRoute(
+          path: '/booking/:doctorId',
+          name: 'booking',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) {
+            final doctorId = state.pathParameters['doctorId']!;
+            return BookingScreen(doctorId: doctorId);
+          },
+        ),
       GoRoute(
         path: '/settings',
         name: 'settings',

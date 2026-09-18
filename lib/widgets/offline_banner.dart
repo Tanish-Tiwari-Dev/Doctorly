@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:doctorly/providers/connectivity_provider.dart';
-import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 
 /// Reusable banner widget displaying a warning when device is offline.
 class OfflineBanner extends ConsumerWidget {
@@ -37,7 +37,7 @@ class OfflineBanner extends ConsumerWidget {
               fontWeight: FontWeight.w600,
             ),
       ),
-      backgroundColor: AppColors.error,
+      backgroundColor: DesignTokens.error,
       actions: const [
         SizedBox.shrink(),
       ],

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:doctorly/features/doctor/domain/models/doctor.dart';
-import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
 
 /// A compact card for the "Top Rated" horizontal carousel on the Home Screen.
@@ -233,7 +232,7 @@ class TopRatedDoctorCard extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () => context.push('/doctor/${doctor.id}'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.error,
+                    backgroundColor: DesignTokens.error,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: DesignTokens.sm + DesignTokens.xs,

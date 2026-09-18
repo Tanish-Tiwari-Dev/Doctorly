@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:doctorly/features/auth/presentation/providers/auth_provider.dart';
 import 'package:doctorly/services/logger.dart';
-import 'package:doctorly/utils/app_colors.dart';
+import 'package:doctorly/utils/design_tokens.dart';
 
 /// Screen for user settings, sign out, and account deletion.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -28,7 +28,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'Sign out failed. Please try again.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            backgroundColor: AppColors.error,
+            backgroundColor: DesignTokens.error,
           ),
         );
       }
@@ -48,7 +48,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               const Icon(
                 Icons.warning_amber_rounded,
-                color: AppColors.error,
+                color: DesignTokens.error,
                 size: 28,
               ),
               const SizedBox(width: 10),
@@ -56,7 +56,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'Delete Account',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: DesignTokens.textPrimary,
                     ),
               ),
             ],
@@ -64,7 +64,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           content: Text(
             'Are you sure? This will permanently delete your account and all data. This action cannot be undone.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: DesignTokens.textSecondary,
                   height: 1.4,
                 ),
           ),
@@ -76,14 +76,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'Cancel',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
+                      color: DesignTokens.textSecondary,
                     ),
               ),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
+                backgroundColor: DesignTokens.error,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
@@ -118,7 +118,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'Failed to delete account. Please try again.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            backgroundColor: AppColors.error,
+            backgroundColor: DesignTokens.error,
           ),
         );
       }
@@ -134,14 +134,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final isLoading = authState?.isLoading ?? false;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: DesignTokens.scaffoldBackground,
       appBar: AppBar(
         title: Text(
           'Settings',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: DesignTokens.textPrimary,
               ),
         ),
         backgroundColor: Colors.white,
@@ -162,7 +162,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.textPrimary.withValues(alpha: 0.04),
+                      color: DesignTokens.textPrimary.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -172,11 +172,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      backgroundColor: DesignTokens.primary.withValues(alpha: 0.1),
                       child: Icon(
                         isAnonymous ? Icons.person_outline : Icons.person,
                         size: 30,
-                        color: AppColors.primary,
+                        color: DesignTokens.primary,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -189,7 +189,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: DesignTokens.textPrimary,
                                 ),
                           ),
                           const SizedBox(height: 4),
@@ -198,7 +198,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ? 'Signed in as guest'
                                 : 'Authenticated account',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: DesignTokens.textSecondary,
                                 ),
                           ),
                         ],
@@ -214,7 +214,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'Account Settings',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textSecondary,
+                      color: DesignTokens.textSecondary,
                       letterSpacing: 0.5,
                     ),
               ),
@@ -226,7 +226,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.textPrimary.withValues(alpha: 0.04),
+                      color: DesignTokens.textPrimary.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -243,19 +243,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     leading: const Icon(
                       Icons.logout,
-                      color: AppColors.textPrimary,
+                      color: DesignTokens.textPrimary,
                     ),
                     title: Text(
                       'Sign Out',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: DesignTokens.textPrimary,
                           ),
                     ),
                     subtitle: Text(
                       'Clear current session and return to login',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: DesignTokens.textSecondary,
                           ),
                     ),
                     trailing: isLoading
@@ -266,7 +266,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           )
                         : const Icon(
                             Icons.chevron_right,
-                            color: AppColors.textHint,
+                            color: DesignTokens.textSecondary,
                           ),
                     onTap: (isLoading || _isDeleting) ? null : _handleSignOut,
                   ),
@@ -278,10 +278,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.05),
+                  color: DesignTokens.error.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.error.withValues(alpha: 0.2),
+                    color: DesignTokens.error.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Column(
@@ -291,7 +291,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         const Icon(
                           Icons.delete_forever_outlined,
-                          color: AppColors.error,
+                          color: DesignTokens.error,
                           size: 22,
                         ),
                         const SizedBox(width: 8),
@@ -299,7 +299,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           'Danger Zone',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.error,
+                                color: DesignTokens.error,
                               ),
                         ),
                       ],
@@ -308,7 +308,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     Text(
                       'Permanently delete your Doctorly account, appointment history, and saved favorites. This action cannot be undone.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: DesignTokens.textSecondary,
                             height: 1.4,
                           ),
                     ),
@@ -321,7 +321,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ? null
                             : _confirmAndDeleteAccount,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.error,
+                          backgroundColor: DesignTokens.error,
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(

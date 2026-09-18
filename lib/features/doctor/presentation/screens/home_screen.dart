@@ -3,19 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:doctorly/features/doctor/data/repositories/doctors_repository.dart';
-import 'package:doctorly/features/doctor/domain/models/specialty.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_filter_provider.dart';
 
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
 import 'package:doctorly/features/doctor/presentation/providers/location_provider.dart';
+import 'package:doctorly/features/doctor/presentation/widgets/category_explainer_sheet.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/doctor_card.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/doctor_card_skeleton.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/doctor_filter_sheet.dart';
 import 'package:doctorly/features/doctor/presentation/widgets/top_rated_doctor_card.dart';
 import 'package:doctorly/services/location_service.dart';
-import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
+import 'package:doctorly/utils/disha_categories.dart';
+import 'package:doctorly/utils/doctor_strings.dart';
 import 'package:doctorly/widgets/empty_state.dart';
+
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -70,7 +72,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppColors.textPrimary,
+          backgroundColor: DesignTokens.textPrimary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
           ),
@@ -95,7 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          backgroundColor: AppColors.error,
+          backgroundColor: DesignTokens.error,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
           ),
@@ -116,11 +118,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final topRatedAsync = ref.watch(topRatedDoctorsProvider);
     final searchQuery = ref.watch(searchQueryProvider).trim();
     final activeFilter = ref.watch(doctorFilterProvider);
-    final selectedSpecialty = ref.watch(selectedSpecialtyProvider);
+    final selectedCategory = ref.watch(selectedCategoryProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: DesignTokens.scaffoldBackground,
       body: SafeArea(
         child: asyncDoctors.when(
           loading: () => CustomScrollView(
@@ -152,13 +154,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             return CustomScrollView(
               slivers: [
-                // 1. SliverAppBar with Search Bar and Specialty Quick Chips embedded in bottom
+                // 1. SliverAppBar with Disha Categories, Search Bar, and Specialty Quick Chips embedded in bottom
                 SliverAppBar(
                   floating: true,
                   snap: true,
                   pinned: false,
                   elevation: 0,
-                  backgroundColor: AppColors.background,
+                  backgroundColor: DesignTokens.scaffoldBackground,
                   automaticallyImplyLeading: false,
                   toolbarHeight: 56,
                   titleSpacing: DesignTokens.md,
@@ -175,7 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.primary,
+                                  DesignTokens.primary,
                                 ),
                               ),
                             )
@@ -184,8 +186,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   ? Icons.near_me
                                   : Icons.near_me_outlined,
                               color: _nearbyActive
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
+                                  ? DesignTokens.primary
+                                  : DesignTokens.textSecondary,
                             ),
                       tooltip: _nearbyActive ? 'Show All Doctors' : 'Near Me',
                       onPressed: _isFetchingLocation ? null : _handleNearMe,
@@ -193,7 +195,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     IconButton(
                       icon: const Icon(
                         Icons.settings_outlined,
-                        color: AppColors.primary,
+                        color: DesignTokens.primary,
                       ),
                       tooltip: 'Settings',
                       onPressed: () => context.push('/settings'),
@@ -201,10 +203,135 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(width: DesignTokens.xs),
                   ],
                   bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(124),
+                    preferredSize: const Size.fromHeight(154),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Section Header: "What do you need help with?"
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: DesignTokens.md,
+                            right: DesignTokens.md,
+                            bottom: DesignTokens.xs,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                DoctorStrings.categorySectionTitle,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: DesignTokens.textPrimary,
+                                ),
+                              ),
+                              if (selectedCategory != null)
+                                GestureDetector(
+                                  onTap: () {
+                                    ref.read(selectedCategoryProvider.notifier).state = null;
+                                  },
+                                  child: Text(
+                                    'Clear',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: DesignTokens.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+
+                        // Disha 8 Patient-Facing Categories: Horizontal Chip Row with Info Icon
+                        SizedBox(
+                          height: 48,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: DesignTokens.md,
+                            ),
+                            itemCount: dishaCategories.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: DesignTokens.sm),
+                            itemBuilder: (context, index) {
+                              final cat = dishaCategories[index];
+                              final isSelected = selectedCategory == cat.slug;
+
+                              return GestureDetector(
+                                onTap: () {
+                                  ref.read(selectedCategoryProvider.notifier).state =
+                                      isSelected ? null : cat.slug;
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.only(
+                                    left: DesignTokens.sm + DesignTokens.xs,
+                                    right: DesignTokens.xs,
+                                    top: DesignTokens.xs,
+                                    bottom: DesignTokens.xs,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? DesignTokens.primary
+                                        : DesignTokens.cardBackground,
+                                    borderRadius: BorderRadius.circular(DesignTokens.radiusLarge),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? DesignTokens.primary
+                                          : DesignTokens.divider,
+                                    ),
+                                    boxShadow: const [DesignTokens.subtleShadow],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        cat.icon,
+                                        size: 18,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : DesignTokens.primary,
+                                      ),
+                                      const SizedBox(width: DesignTokens.xs),
+                                      Text(
+                                        cat.title,
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          fontWeight: isSelected
+                                              ? FontWeight.w700
+                                              : FontWeight.w600,
+                                          color: isSelected
+                                              ? Colors.white
+                                              : DesignTokens.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      IconButton(
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 28,
+                                          minHeight: 28,
+                                        ),
+                                        icon: Icon(
+                                          Icons.info_outline_rounded,
+                                          size: 16,
+                                          color: isSelected
+                                              ? Colors.white70
+                                              : DesignTokens.textSecondary,
+                                        ),
+                                        tooltip: 'About ${cat.title}',
+                                        onPressed: () {
+                                          CategoryExplainerSheet.show(context, cat.slug);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: DesignTokens.xs),
+
                         // Search Bar
                         Padding(
                           padding: const EdgeInsets.symmetric(
@@ -227,7 +354,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   const Icon(
                                     Icons.search_rounded,
                                     size: 22,
-                                    color: AppColors.textHint,
+                                    color: DesignTokens.textSecondary,
                                   ),
                                   const SizedBox(width: DesignTokens.sm),
                                   Expanded(
@@ -244,7 +371,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         hintText: 'Search doctors, specialties…',
                                         hintStyle: theme.textTheme.bodyMedium
                                             ?.copyWith(
-                                          color: AppColors.textHint,
+                                          color: DesignTokens.textSecondary,
                                         ),
                                         border: InputBorder.none,
                                         enabledBorder: InputBorder.none,
@@ -264,7 +391,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       child: const Icon(
                                         Icons.clear_rounded,
                                         size: 18,
-                                        color: AppColors.textHint,
+                                        color: DesignTokens.textSecondary,
                                       ),
                                     ),
                                   const SizedBox(width: DesignTokens.xs),
@@ -272,12 +399,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     onTap: () => DoctorFilterSheet.show(context),
                                     child: Badge(
                                       isLabelVisible: !activeFilter.isDefault,
-                                      backgroundColor: AppColors.primary,
+                                      backgroundColor: DesignTokens.primary,
                                       smallSize: 8,
                                       child: const Icon(
                                         Icons.tune_rounded,
                                         size: 22,
-                                        color: AppColors.primary,
+                                        color: DesignTokens.primary,
                                       ),
                                     ),
                                   ),
@@ -287,74 +414,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: DesignTokens.xs),
-
-                        // Specialty Quick Chips: Horizontal ListView with 12px spacing
-                        SizedBox(
-                          height: 44,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: DesignTokens.md,
-                            ),
-                            itemCount: Specialty.values.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(width: DesignTokens.sm),
-                            itemBuilder: (context, index) {
-                              final specialty = Specialty.values[index];
-                              final isSelected = selectedSpecialty == specialty;
-                              return GestureDetector(
-                                onTap: () {
-                                  ref
-                                      .read(selectedSpecialtyProvider.notifier)
-                                      .state = isSelected ? null : specialty;
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: DesignTokens.md,
-                                    vertical: DesignTokens.sm,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? AppColors.primary
-                                        : DesignTokens.inputBackground,
-                                    borderRadius: BorderRadius.circular(DesignTokens.radiusLarge),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        specialty.icon,
-                                        size: 16,
-                                        color: isSelected
-                                            ? Colors.white
-                                            : AppColors.textSecondary,
-                                      ),
-                                      const SizedBox(width: DesignTokens.xs),
-                                      Text(
-                                        specialty.label,
-                                        style:
-                                            theme.textTheme.bodySmall?.copyWith(
-                                          fontWeight: isSelected
-                                              ? FontWeight.w600
-                                              : FontWeight.w500,
-                                          color: isSelected
-                                              ? Colors.white
-                                              : AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: DesignTokens.xs),
                       ],
                     ),
                   ),
                 ),
+
 
                 // Sections when not actively searching
                 if (!isSearching) ...[
@@ -381,7 +445,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: Text(
                               'See All',
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: AppColors.primary,
+                                color: DesignTokens.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -457,7 +521,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Text(
                             '${filtered.length} found',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                              color: DesignTokens.textSecondary,
                             ),
                           ),
                         ],
@@ -468,16 +532,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                 // 4. All Doctors List with 16px separator between items
                 if (filtered.isEmpty)
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.all(DesignTokens.xl),
+                      padding: const EdgeInsets.all(DesignTokens.xl),
                       child: EmptyState(
                         icon: Icons.search_off,
                         title: 'No doctors found',
-                        subtitle: 'Try a different search term or filter.',
+                        subtitle: selectedCategory != null && activeFilter.district != null
+                            ? 'No specialists found for this category in ${activeFilter.district}. Try clearing your category or district filter.'
+                            : selectedCategory != null
+                                ? 'No doctors found offering services in this specialty category.'
+                                : activeFilter.district != null
+                                    ? 'No doctors found in ${activeFilter.district}.'
+                                    : 'Try a different search term or filter.',
                       ),
                     ),
                   )
+
                 else
                   SliverPadding(
                     padding: const EdgeInsets.only(bottom: DesignTokens.lg),

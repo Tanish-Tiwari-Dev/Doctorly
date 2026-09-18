@@ -8,7 +8,6 @@ import 'package:shimmer/shimmer.dart';
 import 'package:doctorly/features/appointments/data/repositories/availability_repository.dart';
 import 'package:doctorly/features/appointments/presentation/providers/appointments_provider.dart';
 import 'package:doctorly/features/doctor/presentation/providers/doctor_provider.dart';
-import 'package:doctorly/utils/app_colors.dart';
 import 'package:doctorly/utils/design_tokens.dart';
 import 'package:doctorly/widgets/max_width_container.dart';
 
@@ -42,7 +41,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.textPrimary,
+            backgroundColor: DesignTokens.textPrimary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
@@ -61,7 +60,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.error,
+            backgroundColor: DesignTokens.error,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
             ),
@@ -90,7 +89,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
 
     if (doctor == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: DesignTokens.scaffoldBackground,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -146,12 +145,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
     final canConfirm = _selectedSlot != null && !submitting;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: DesignTokens.scaffoldBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back, color: DesignTokens.textPrimary),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -187,10 +186,10 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.divider,
+                          color: DesignTokens.divider,
                           width: 1,
                         ),
-                        color: AppColors.avatarBackground,
+                        color: DesignTokens.avatarBackground,
                       ),
                       child: ClipOval(
                         child: doctor.imageUrl.isNotEmpty
@@ -202,13 +201,13 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                 errorWidget: (_, _, _) => const Icon(
                                   Icons.person,
                                   size: 24,
-                                  color: AppColors.textHint,
+                                  color: DesignTokens.textSecondary,
                                 ),
                               )
                             : const Icon(
                                 Icons.person,
                                 size: 24,
-                                color: AppColors.textHint,
+                                color: DesignTokens.textSecondary,
                               ),
                       ),
                     ),
@@ -288,7 +287,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                     child: Text(
                       'Failed to load available appointment slots.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.error,
+                        color: DesignTokens.error,
                       ),
                     ),
                   ),
@@ -301,7 +300,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                         child: Text(
                           'No available appointment slots at this time.',
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: DesignTokens.textSecondary,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
@@ -386,7 +385,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                   border: isSelected
                                       ? null
                                       : Border.all(
-                                          color: AppColors.divider,
+                                          color: DesignTokens.divider,
                                           width: 1,
                                         ),
                                   boxShadow: isSelected
@@ -409,7 +408,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                           theme.textTheme.bodySmall?.copyWith(
                                         color: isSelected
                                             ? Colors.white.withValues(alpha: 0.9)
-                                            : AppColors.textSecondary,
+                                            : DesignTokens.textSecondary,
                                         fontWeight: isSelected
                                             ? FontWeight.w600
                                             : FontWeight.w500,
@@ -423,7 +422,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                           theme.textTheme.titleLarge?.copyWith(
                                         color: isSelected
                                             ? Colors.white
-                                            : AppColors.textPrimary,
+                                            : DesignTokens.textPrimary,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 18,
                                       ),
@@ -450,7 +449,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                           child: Text(
                             'No slots available on this date.',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                              color: DesignTokens.textSecondary,
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -475,7 +474,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? AppColors.primary.withValues(alpha: 0.1)
+                                      ? DesignTokens.primary.withValues(alpha: 0.1)
                                       : DesignTokens.inputBackground,
                                   borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
                                   border: Border.all(
@@ -490,7 +489,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: isSelected
                                         ? theme.colorScheme.primary
-                                        : AppColors.textPrimary,
+                                        : DesignTokens.textPrimary,
                                     fontWeight: isSelected
                                         ? FontWeight.w700
                                         : FontWeight.w500,
@@ -520,7 +519,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
             color: DesignTokens.cardBackground,
             border: Border(
               top: BorderSide(
-                color: AppColors.divider,
+                color: DesignTokens.divider,
                 width: 1,
               ),
             ),
@@ -537,7 +536,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                     Text(
                       'Selected Slot',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: DesignTokens.textSecondary,
                         fontSize: 11,
                       ),
                     ),
@@ -550,7 +549,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: _selectedSlot != null
                             ? theme.colorScheme.primary
-                            : AppColors.textHint,
+                            : DesignTokens.textSecondary,
                         fontWeight: _selectedSlot != null
                             ? FontWeight.bold
                             : FontWeight.normal,
@@ -577,7 +576,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                         theme.colorScheme.primary.withValues(alpha: 0.4),
                     foregroundColor: Colors.white,
                     elevation: canConfirm ? 3 : 0,
-                    shadowColor: AppColors.primary.withValues(alpha: 0.2),
+                    shadowColor: DesignTokens.primary.withValues(alpha: 0.2),
                     padding: const EdgeInsets.symmetric(
                       horizontal: DesignTokens.lg,
                       vertical: DesignTokens.sm + DesignTokens.xs,

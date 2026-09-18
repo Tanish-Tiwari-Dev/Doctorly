@@ -15,19 +15,16 @@ class DoctorsRepository {
 
   final SupabaseClient _client;
 
-  /// Fetches all doctor profiles up to [limit], caches them locally, and falls back to cache on failure.
-  ///
-  /// [orderBy] determines the sorting column (defaults to 'rating').
-  /// Optional [filter] applies rating, specialty, distance, and open-now criteria.
-  /// Returns a list of [Doctor] objects.
-  /// Throws [RepositoryException] if both network fetch and Hive cache access fail.
+  /// Fetches all doctor profiles (or up to [limit] if specified), caches them locally, and falls back to cache on failure.
   Future<List<Doctor>> fetchAll({
     String orderBy = 'rating',
     DoctorFilter? filter,
-    int limit = 50,
+    int? limit,
   }) async {
     try {
-      var query = _client.from('doctors').select();
+      var query = _client.from('doctors').select(
+        '*, doctor_services(status, services(slug, name))',
+      );
 
       if (filter != null) {
         if (filter.minRating > 0) {
@@ -36,9 +33,18 @@ class DoctorsRepository {
         if (filter.specialty != null && filter.specialty!.isNotEmpty) {
           query = query.eq('specialty', filter.specialty!);
         }
+        if (filter.district != null && filter.district!.isNotEmpty) {
+          query = query.eq('district', filter.district!);
+        }
       }
 
-      final res = await query.order(orderBy, ascending: false).limit(limit);
+      var orderedQuery = query.order(orderBy, ascending: false);
+      final dynamic res;
+      if (limit != null) {
+        res = await orderedQuery.limit(limit);
+      } else {
+        res = await orderedQuery;
+      }
       final list = (res as List).cast<Map<String, dynamic>>();
       await CacheService.instance.cacheDoctors(list);
       var doctors = list.map((row) => Doctor.fromJson(row)).toList();
@@ -69,6 +75,10 @@ class DoctorsRepository {
               doctors =
                   doctors.where((d) => d.specialty == filter.specialty).toList();
             }
+            if (filter.district != null && filter.district!.isNotEmpty) {
+              doctors =
+                  doctors.where((d) => d.district?.toLowerCase() == filter.district!.toLowerCase()).toList();
+            }
             if (filter.maxDistanceKm < 50) {
               doctors = doctors
                   .where((d) => d.distanceKm <= filter.maxDistanceKm)
@@ -80,7 +90,10 @@ class DoctorsRepository {
                   .toList();
             }
           }
-          return doctors.length > limit ? doctors.sublist(0, limit) : doctors;
+          if (limit != null && doctors.length > limit) {
+            return doctors.sublist(0, limit);
+          }
+          return doctors;
         }
       } catch (_) {}
       throw RepositoryException(classifyError(e), e.toString());
@@ -88,16 +101,14 @@ class DoctorsRepository {
   }
 
   /// Fetches a doctor profile by [id], falling back to local cache on error.
-  ///
-  /// Returns matching [Doctor] or `null` if no doctor matches [id].
-  /// Throws [RepositoryException] on database failure when no cache is available.
   Future<Doctor?> fetchById(String id) async {
     try {
       final res = await _client
           .from('doctors')
-          .select()
+          .select('*, doctor_services(status, services(slug, name))')
           .eq('id', id)
           .maybeSingle();
+
       if (res == null) return null;
       return Doctor.fromJson(res);
     } catch (e) {
@@ -105,11 +116,11 @@ class DoctorsRepository {
       try {
         final cached = await CacheService.instance.getCachedDoctors();
         if (cached != null && cached.isNotEmpty) {
-          final match = cached.firstWhere(
-            (row) => row['id'] == id,
-            orElse: () => <String, dynamic>{},
-          );
-          if (match.isNotEmpty) {
+          final match = cached.cast<Map<String, dynamic>?>().firstWhere(
+                (row) => row != null && row['id'] == id,
+                orElse: () => null,
+              );
+          if (match != null) {
             return Doctor.fromJson(match);
           }
         }
@@ -118,80 +129,55 @@ class DoctorsRepository {
     }
   }
 
-  /// Fetches doctors near the specified [lat] and [lng] coordinates within [radiusKm].
-  ///
-  /// Accepts optional [limit] and [filter] parameters.
-  /// Returns a list of nearby [Doctor] objects sorted by distance.
-  /// Throws [RepositoryException] on RPC or connection error when cache fails.
+  /// Fetches doctors near a geographic coordinate using the `nearby_doctors` PostGIS RPC.
   Future<List<Doctor>> fetchNearby(
     double lat,
     double lng, {
-    double radiusKm = 5,
-    int limit = 20,
+    double radiusKm = 10,
     DoctorFilter? filter,
+    int limit = 50,
   }) async {
-    final searchRadius = (filter != null && filter.maxDistanceKm < 50)
-        ? filter.maxDistanceKm.toDouble()
-        : radiusKm;
-
     try {
       final res = await _client.rpc(
         'nearby_doctors',
-        params: {'lat': lat, 'lng': lng, 'radius_km': searchRadius},
+        params: {'lat': lat, 'lng': lng, 'radius_km': radiusKm},
       );
-      var list = (res as List)
-          .cast<Map<String, dynamic>>()
-          .map((row) => Doctor.fromJson(row))
-          .toList();
+
+      final list = (res as List).cast<Map<String, dynamic>>();
+      var doctors = list.map((row) => Doctor.fromJson(row)).toList();
 
       if (filter != null) {
         if (filter.minRating > 0) {
-          list = list.where((d) => d.rating >= filter.minRating).toList();
+          doctors = doctors.where((d) => d.rating >= filter.minRating).toList();
         }
         if (filter.specialty != null && filter.specialty!.isNotEmpty) {
-          list = list.where((d) => d.specialty == filter.specialty).toList();
+          doctors =
+              doctors.where((d) => d.specialty == filter.specialty).toList();
+        }
+        if (filter.district != null && filter.district!.isNotEmpty) {
+          doctors =
+              doctors.where((d) => d.district?.toLowerCase() == filter.district!.toLowerCase()).toList();
+        }
+        if (filter.maxDistanceKm < 50) {
+          doctors = doctors
+              .where((d) => d.distanceKm <= filter.maxDistanceKm)
+              .toList();
         }
         if (filter.openNowOnly) {
-          list = list
+          doctors = doctors
               .where((d) => isDoctorOpen(d.openingTime, d.closingTime))
               .toList();
         }
       }
 
-      if (list.length > limit) {
-        return list.sublist(0, limit);
-      }
-      return list;
+      return doctors.length > limit ? doctors.sublist(0, limit) : doctors;
     } catch (e) {
       if (e is RepositoryException) rethrow;
-      try {
-        final cached = await CacheService.instance.getCachedDoctors();
-        if (cached != null && cached.isNotEmpty) {
-          var list = cached.map((row) => Doctor.fromJson(row)).toList();
-          if (filter != null) {
-            if (filter.minRating > 0) {
-              list = list.where((d) => d.rating >= filter.minRating).toList();
-            }
-            if (filter.specialty != null && filter.specialty!.isNotEmpty) {
-              list = list.where((d) => d.specialty == filter.specialty).toList();
-            }
-            if (filter.openNowOnly) {
-              list = list
-                  .where((d) => isDoctorOpen(d.openingTime, d.closingTime))
-                  .toList();
-            }
-          }
-          return list.length > limit ? list.sublist(0, limit) : list;
-        }
-      } catch (_) {}
       throw RepositoryException(classifyError(e), e.toString());
     }
   }
 
   /// Searches doctors matching [query] in name or specialty up to [limit].
-  ///
-  /// Returns matching [Doctor] list.
-  /// Throws [RepositoryException] on query failure if Hive cache is unavailable.
   Future<List<Doctor>> searchDoctors(String query, {int limit = 20}) async {
     final cleanQuery = query.trim();
     if (cleanQuery.isEmpty) {
@@ -200,8 +186,8 @@ class DoctorsRepository {
     try {
       final res = await _client
           .from('doctors')
-          .select()
-          .or('name.ilike.%$cleanQuery%,specialty.ilike.%$cleanQuery%')
+          .select('*, doctor_services(status, services(slug, name))')
+          .or('name.ilike.%$cleanQuery%,specialty.ilike.%$cleanQuery%,hospital_name.ilike.%$cleanQuery%,district.ilike.%$cleanQuery%')
           .order('rating', ascending: false)
           .limit(limit);
       final list = (res as List).cast<Map<String, dynamic>>();
@@ -216,7 +202,9 @@ class DoctorsRepository {
               .map((row) => Doctor.fromJson(row))
               .where((d) =>
                   d.name.toLowerCase().contains(q) ||
-                  d.specialty.toLowerCase().contains(q))
+                  d.specialty.toLowerCase().contains(q) ||
+                  (d.hospitalName?.toLowerCase().contains(q) ?? false) ||
+                  (d.district?.toLowerCase().contains(q) ?? false))
               .toList();
           return list.length > limit ? list.sublist(0, limit) : list;
         }
@@ -226,9 +214,6 @@ class DoctorsRepository {
   }
 
   /// Fetches top-rated doctors with rating >= [minRating], falling back to local cache on error.
-  ///
-  /// Returns a list of top-rated [Doctor] objects up to [limit].
-  /// Throws [RepositoryException] on database error if cache read fails.
   Future<List<Doctor>> fetchTopRated({
     double minRating = 4.5,
     int limit = 10,
@@ -236,7 +221,7 @@ class DoctorsRepository {
     try {
       final res = await _client
           .from('doctors')
-          .select()
+          .select('*, doctor_services(status, services(slug, name))')
           .gte('rating', minRating)
           .order('rating', ascending: false)
           .limit(limit);
@@ -250,8 +235,8 @@ class DoctorsRepository {
           final list = cached
               .map((row) => Doctor.fromJson(row))
               .where((d) => d.rating >= minRating)
-              .toList();
-          list.sort((a, b) => b.rating.compareTo(a.rating));
+              .toList()
+            ..sort((a, b) => b.rating.compareTo(a.rating));
           return list.length > limit ? list.sublist(0, limit) : list;
         }
       } catch (_) {}
@@ -259,21 +244,18 @@ class DoctorsRepository {
     }
   }
 
-  /// Fetches up to [limit] similar doctors with the same [specialty] excluding [currentDoctorId].
-  ///
-  /// Returns a list of [Doctor] objects.
-  /// Throws [RepositoryException] on database error if cache read fails.
+  /// Fetches similar doctors for a given doctor ID and specialty.
   Future<List<Doctor>> fetchSimilarDoctors(
-    String currentDoctorId,
+    String doctorId,
     String specialty, {
-    int limit = 5,
+    int limit = 4,
   }) async {
     try {
       final res = await _client
           .from('doctors')
-          .select()
+          .select('*, doctor_services(status, services(slug, name))')
           .eq('specialty', specialty)
-          .neq('id', currentDoctorId)
+          .neq('id', doctorId)
           .order('rating', ascending: false)
           .limit(limit);
       final list = (res as List).cast<Map<String, dynamic>>();
@@ -285,9 +267,9 @@ class DoctorsRepository {
         if (cached != null && cached.isNotEmpty) {
           final list = cached
               .map((row) => Doctor.fromJson(row))
-              .where((d) => d.specialty == specialty && d.id != currentDoctorId)
-              .toList();
-          list.sort((a, b) => b.rating.compareTo(a.rating));
+              .where((d) => d.specialty == specialty && d.id != doctorId)
+              .toList()
+            ..sort((a, b) => b.rating.compareTo(a.rating));
           return list.length > limit ? list.sublist(0, limit) : list;
         }
       } catch (_) {}
