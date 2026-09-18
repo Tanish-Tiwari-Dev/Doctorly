@@ -147,35 +147,28 @@ class DoctorCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // A. Top Row (Name + Verification + Rating)
-                  Row(
+                  // A. Doctor Name (Full width, soft-wrap up to 2 lines)
+                  Text(
+                    doctor.name,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: DesignTokens.textPrimary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: DesignTokens.xs),
+
+                  // B. Badges Row (Verification Badge + Rating Chip in a Wrap)
+                  Wrap(
+                    spacing: DesignTokens.xs,
+                    runSpacing: DesignTokens.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Expanded(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                doctor.name,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: DesignTokens.textPrimary,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (doctor.isFullyVerified) ...[
-                              const SizedBox(width: DesignTokens.xs),
-                              const VerifiedBadge(compact: true),
-                            ] else if (doctor.isPartiallyVerified) ...[
-                              const SizedBox(width: DesignTokens.xs),
-                              const VerifiedBadge(compact: true, partiallyVerified: true),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: DesignTokens.xs),
+                      if (doctor.isFullyVerified)
+                        const VerifiedBadge(compact: true)
+                      else if (doctor.isPartiallyVerified)
+                        const VerifiedBadge(compact: true, partiallyVerified: true),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: DesignTokens.sm,
@@ -225,81 +218,92 @@ class DoctorCard extends StatelessWidget {
 
                   const SizedBox(height: DesignTokens.xs),
 
-                  // B. Stats Row (Experience, Distance)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  // C. Stats Row (Experience, Distance)
+                  Wrap(
+                    spacing: DesignTokens.sm + DesignTokens.xs,
+                    runSpacing: DesignTokens.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.work_outline,
-                        size: 14.0,
-                        color: DesignTokens.textSecondary,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.work_outline,
+                            size: 14.0,
+                            color: DesignTokens.textSecondary,
+                          ),
+                          const SizedBox(width: DesignTokens.xs),
+                          Text(
+                            experienceStr,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontSize: 10.0,
+                              color: DesignTokens.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: DesignTokens.xs),
-                      Text(
-                        experienceStr,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 10.0,
-                          color: DesignTokens.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(width: DesignTokens.sm + DesignTokens.xs),
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 14.0,
-                        color: DesignTokens.textSecondary,
-                      ),
-                      const SizedBox(width: DesignTokens.xs),
-                      Text(
-                        distanceStr,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 10.0,
-                          color: DesignTokens.textSecondary,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 14.0,
+                            color: DesignTokens.textSecondary,
+                          ),
+                          const SizedBox(width: DesignTokens.xs),
+                          Text(
+                            distanceStr,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontSize: 10.0,
+                              color: DesignTokens.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                   const SizedBox(height: DesignTokens.sm),
 
-                  // C. OPD Availability Pill & View Profile Button Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // D. OPD Availability Pill & View Profile Button Row
+                  Wrap(
+                    spacing: DesignTokens.xs,
+                    runSpacing: DesignTokens.xs,
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: DesignTokens.sm,
-                            vertical: DesignTokens.xs / 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: opdBackground,
-                            borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                opdIcon,
-                                size: 13.0,
-                                color: opdColor,
-                              ),
-                              const SizedBox(width: DesignTokens.xs),
-                              Flexible(
-                                child: Text(
-                                  availabilityInfo.label,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: opdColor,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: DesignTokens.sm,
+                          vertical: DesignTokens.xs / 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: opdBackground,
+                          borderRadius: BorderRadius.circular(DesignTokens.radiusSmall),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              opdIcon,
+                              size: 13.0,
+                              color: opdColor,
+                            ),
+                            const SizedBox(width: DesignTokens.xs),
+                            Flexible(
+                              child: Text(
+                                availabilityInfo.label,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: opdColor,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: DesignTokens.xs),
                       ElevatedButton(
                         onPressed: () => context.push('/doctor/${doctor.id}'),
                         style: ElevatedButton.styleFrom(

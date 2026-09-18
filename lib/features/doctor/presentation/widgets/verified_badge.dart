@@ -55,12 +55,16 @@ class VerifiedBadge extends StatelessWidget {
               size: compact ? 12 : 14,
             ),
             const SizedBox(width: DesignTokens.xs),
-            Text(
-              labelText,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: badgeColor,
-                fontWeight: FontWeight.w600,
-                fontSize: compact ? 10 : 11,
+            Flexible(
+              child: Text(
+                labelText,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: badgeColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: compact ? 10 : 11,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
